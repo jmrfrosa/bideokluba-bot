@@ -1,0 +1,15 @@
+{
+  "name": "bideokluba-bot",
+  "version": "1.0.0",
+  "description": "Bot for Bideokluba",
+  "main": "bot.js",
+  "author": "João Rosa",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0"
+  },
+  "scripts": {
+    "start": "node bot.js"
+  }
+}
