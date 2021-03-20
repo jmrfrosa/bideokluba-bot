@@ -1,26 +1,45 @@
+const neededRole = 'Fundador';
+
 let options = [
-  { id: 1     , text: 'Segunda'       , emoji: '2️⃣', users: [] },
-  { id: 2     , text: 'Terça'         , emoji: '3️⃣', users: [] },
-  { id: 3     , text: 'Quarta'        , emoji: '4️⃣', users: [] },
-  { id: 4     , text: 'Quinta'        , emoji: '5️⃣', users: [] },
-  { id: 5     , text: 'Sexta'         , emoji: '6️⃣', users: [] },
-  { id: 6     , text: 'Sábado'        , emoji: '7️⃣', users: [] },
-  { id: 7     , text: 'Domingo'       , emoji: '8️⃣', users: [] },
-  { id: 'next', text: 'Próxima semana', emoji: '⏭️', users: [] }
+  { id: 1     , text: 'Segunda'       , emoji: '2️⃣' },
+  { id: 2     , text: 'Terça'         , emoji: '3️⃣' },
+  { id: 3     , text: 'Quarta'        , emoji: '4️⃣' },
+  { id: 4     , text: 'Quinta'        , emoji: '5️⃣' },
+  { id: 5     , text: 'Sexta'         , emoji: '6️⃣' },
+  { id: 6     , text: 'Sábado'        , emoji: '7️⃣' },
+  { id: 7     , text: 'Domingo'       , emoji: '8️⃣' },
+  { id: 'next', text: 'Próxima semana', emoji: '⏭️' }
 ]
+
+options.map(opt => opt.users = []);
 
 const validReactions = options.map(o => o.emoji);
 
 module.exports = {
-  name: 'vote',
-  description: 'Criar uma votação para escolher o dia da discussão',
-  args: false,
+  name: 'votar',
+  description: 'Criar uma votação para escolher o dia da discussão. `\[weekday]`\ varia de 1 (segunda) a 7 (domingo) e determina quais as datas fechadas.',
+  args: true,
+  usage: '[channel] [weekday]',
   guildOnly: true,
-  execute: async (message, _args) => {
-    const weekday = convertToWeekday(message.createdAt);
+  execute: async (message, args) => {
+    const hasRole = message.member.roles.cache.some(role => role.name === neededRole);
+
+    if (!hasRole) {
+      message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
+      return;
+    }
+
+    const channel = args[0] ? findChannel(args[0], message.client) : message.channel;
+    const weekday = args[1] ? (~~parseInt(args[1]) % 8) : convertToWeekday(message.createdAt);
+
+    if (!channel) {
+      message.reply(`Não consegui encontrar esse canal! Escreve como está na barra lateral sff.`);
+      return;
+    }
+
     const body = renderTable(weekday);
 
-    const sentMsg = await message.channel.send(body);
+    const sentMsg = await channel.send(body);
     const reactionPromises = validReactions.map((reaction) => sentMsg.react(reaction));
     await Promise.all(reactionPromises);
 
@@ -74,6 +93,10 @@ function removeUser(option, user) {
 
 function reactionFilter(reaction, _user) {
   return validReactions.includes(reaction.emoji.name);
+}
+
+function findChannel(channelName, client) {
+  return client.channels.cache.find(ch => ch.name === channelName);
 }
 
 function convertToWeekday(date) {
