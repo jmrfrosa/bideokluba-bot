@@ -1,6 +1,6 @@
 const neededRole = 'Fundador';
 
-let options = [
+const defaultOptions = [
   { id: 1     , text: 'Segunda'       , emoji: '2️⃣' },
   { id: 2     , text: 'Terça'         , emoji: '3️⃣' },
   { id: 3     , text: 'Quarta'        , emoji: '4️⃣' },
@@ -11,9 +11,7 @@ let options = [
   { id: 'next', text: 'Próxima semana', emoji: '⏭️' }
 ]
 
-options.map(opt => opt.users = []);
-
-const validReactions = options.map(o => o.emoji);
+const validReactions = defaultOptions.map(o => o.emoji);
 
 module.exports = {
   name: 'votar',
@@ -37,7 +35,8 @@ module.exports = {
       return;
     }
 
-    const body = renderTable(weekday);
+    let options = defaultOptions.map(opt => ({ ...opt, users: [] }));
+    const body = renderTable(options, weekday);
 
     const sentMsg = await channel.send(body);
     const reactionPromises = validReactions.map((reaction) => sentMsg.react(reaction));
@@ -46,21 +45,21 @@ module.exports = {
     const reactionCollector = sentMsg.createReactionCollector(reactionFilter, { dispose: true });
 
     reactionCollector.on('collect', (r, u) => {
-      const opt = findOption(r);
+      const opt = findOption(options, r);
 
       addUser(opt, u);
-      sentMsg.edit(renderTable(weekday));
+      sentMsg.edit(renderTable(options, weekday));
     });
     reactionCollector.on('remove', (r, u) => {
-      const opt = findOption(r);
+      const opt = findOption(options, r);
 
       removeUser(opt, u);
-      sentMsg.edit(renderTable(weekday));
+      sentMsg.edit(renderTable(options, weekday));
     });
   }
 }
 
-function renderTable(weekday) {
+function renderTable(options, weekday) {
   const header = 'Em que dia marcamos discussão?';
 
   const table = options.reduce((msg, option) => {
@@ -77,7 +76,7 @@ function renderTable(weekday) {
   return `${header}\n${table}`;
 }
 
-function findOption(reaction) {
+function findOption(options, reaction) {
   const { name } = reaction.emoji;
 
   return options.find(o => o.emoji === name);
@@ -106,5 +105,5 @@ function convertToWeekday(date) {
 }
 
 function isEarlier(day, currentDay) {
-  return day < currentDay
+  return day < currentDay;
 }
