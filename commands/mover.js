@@ -17,7 +17,7 @@ module.exports = {
     }
 
     if(args.length < 2) {
-      message.reply(`Uso incorrecto, lê as instruções!\n\`${prefix}${this.name} ${this.usage}\``);
+      message.reply(`Uso incorrecto, lê as instruções!\n\n\`${prefix}${this.name} ${this.usage}\``);
       return;
     }
 

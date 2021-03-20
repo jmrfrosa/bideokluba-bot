@@ -14,7 +14,7 @@ commandFiles.forEach(file => {
 })
 
 client.once('ready', () => {
-  console.log('ready');
+  console.log('Connected to Discord!');
 });
 
 client.on('message', message => {
