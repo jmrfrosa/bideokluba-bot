@@ -6,6 +6,7 @@
   "author": "João Rosa",
   "license": "MIT",
   "dependencies": {
+    "canvas": "^2.7.0",
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0"
   },
