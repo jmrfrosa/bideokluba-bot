@@ -1,4 +1,6 @@
-const neededRole = 'Fundador';
+const { Poll } = require('../models/Poll.js');
+const { fetchChannel } = require('../util/common.js');
+const { roles } = require('../util/constants.js');
 
 const defaultOptions = [
   { id: 1     , text: 'Segunda'       , emoji: '2️⃣' },
@@ -17,18 +19,17 @@ module.exports = {
   name: 'votar',
   description: 'Criar uma votação para escolher o dia da discussão. `\[weekday]`\ varia de 1 (segunda) a 7 (domingo) e determina quais as datas fechadas.',
   args: true,
-  usage: '[channel] [weekday]',
+  usage: '[channel]',
   guildOnly: true,
   execute: async (message, args) => {
-    const hasRole = message.member.roles.cache.some(role => role.name === neededRole);
+    const hasRole = message.member.roles.cache.some(role => role.name === roles.admin);
 
     if (!hasRole) {
       message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
       return;
     }
 
-    const channel = args[0] ? findChannel(args[0], message.client) : message.channel;
-    const weekday = args[1] ? (~~parseInt(args[1]) % 8) : convertToWeekday(message.createdAt);
+    const channel = args[0] ? fetchChannel({ name: args[0] }) : message.channel;
 
     if (!channel) {
       message.reply(`Não consegui encontrar esse canal! Escreve como está na barra lateral sff.`);
@@ -36,74 +37,14 @@ module.exports = {
     }
 
     let options = defaultOptions.map(opt => ({ ...opt, users: [] }));
-    const body = renderTable(options, weekday);
 
+    const poll = new Poll(options, channel, { header: 'Em que dia marcamos discussão?' });
+    const body = poll.render();
     const sentMsg = await channel.send(body);
+
     const reactionPromises = validReactions.map((reaction) => sentMsg.react(reaction));
     await Promise.all(reactionPromises);
 
-    const reactionCollector = sentMsg.createReactionCollector(reactionFilter, { dispose: true });
-
-    reactionCollector.on('collect', (r, u) => {
-      const opt = findOption(options, r);
-
-      addUser(opt, u);
-      sentMsg.edit(renderTable(options, weekday));
-    });
-    reactionCollector.on('remove', (r, u) => {
-      const opt = findOption(options, r);
-
-      removeUser(opt, u);
-      sentMsg.edit(renderTable(options, weekday));
-    });
+    poll.save(sentMsg);
   }
-}
-
-function renderTable(options, weekday) {
-  const header = 'Em que dia marcamos discussão?';
-
-  const table = options.reduce((msg, option) => {
-    const { id, text, emoji, users } = option;
-
-    const graphic = isEarlier(id, weekday) ? '❌' : emoji;
-    const userList = users.reduce((text, user, idx) => (
-      `${text}${user}${idx+1 !== users.length ? ', ' : '' }`
-    ), '');
-
-    return `${msg}${graphic} – ${text}${users.length ? `\n    ${userList}` : ''}\n`
-  }, '');
-
-  return `${header}\n${table}`;
-}
-
-function findOption(options, reaction) {
-  const { name } = reaction.emoji;
-
-  return options.find(o => o.emoji === name);
-}
-
-function addUser(option, user) {
-  option.users.push(user);
-}
-
-function removeUser(option, user) {
-  option.users = option.users.filter(u => u.username !== user.username);
-}
-
-function reactionFilter(reaction, _user) {
-  return validReactions.includes(reaction.emoji.name);
-}
-
-function findChannel(channelName, client) {
-  return client.channels.cache.find(ch => ch.name === channelName);
-}
-
-function convertToWeekday(date) {
-  let day = date.getDay();
-
-  return day === 0 ? 7 : day;
-}
-
-function isEarlier(day, currentDay) {
-  return day < currentDay;
 }
