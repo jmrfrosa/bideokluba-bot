@@ -1,4 +1,5 @@
 const { MessageAttachment } = require("discord.js");
+const { getUserFromMention } = require('../util/common.js')
 const Canvas = require('canvas');
 
 module.exports = {
@@ -78,14 +79,4 @@ async function renderImage(enemy, friend) {
   ctx.strokeText(friendName, 200, 150, 290);
 
   return canvas;
-}
-
-function getUserFromMention(client, mention) {
-  if(!mention) return;
-
-  const matches = mention.match(/^<@!?(\d+)>$/);
-  if(!matches) return;
-
-  const id = matches[1];
-  return client.users.cache.get(id);
 }

@@ -1,15 +1,15 @@
 const { prefix } = require('../config.js');
-
-const neededRole = 'Fundador';
+const { fetchChannel, parseMessageId, fetchMessage } = require('../util/common.js');
+const { roles } = require('../util/constants.js');
 
 module.exports = {
   name: 'mover',
-  description: 'Mover uma mensagem para outro canal',
+  description: 'Mover uma ou mais mensagens para outro canal',
   args: true,
-  usage: "<message_url> <channel_name>",
+  usage: "<channel_name> ...<message_url>",
   guildOnly: true,
   execute(message, args) {
-    const hasRole = message.member.roles.cache.some(role => role.name === neededRole);
+    const hasRole = message.member.roles.cache.some(role => role.name === roles.admin);
 
     if (!hasRole) {
       message.reply(`O teu pedido foi recusado, ${message.member}, pára de me assediar.`);
@@ -21,44 +21,31 @@ module.exports = {
       return;
     }
 
-    const messageId = parseMessageId(args[0]);
-    const targetChannel = message.client.channels.cache.find(ch => ch.name === args[1])
+    const msgs = args.slice(1).map(mId => parseMessageId(mId));
+    const channel = fetchChannel({ name: args[0] });
 
-    if (!targetChannel) {
+    if (!channel) {
       message.reply(`Não consegui encontrar esse canal! Escreve como está na barra lateral sff.`);
       return;
     }
 
-    message.channel.messages.fetch(messageId)
-      .then(msg => {
-        const dateOpts = { dateStyle: 'full', timeStyle: 'long' };
-        // const msgDate = msg.createdAt.toLocaleDateString('pt-PT', dateOpts);
-        const msgDate = new Intl.DateTimeFormat('pt-PT', dateOpts).format(msg.createdAt)
+    msgs.forEach(async (id) => {
+      const msg = await fetchMessage({ id, channel: message.channel, fromCache: false });
 
-        const header = `_Mensagem movida_ (${msg.channel})`;
-        let movedMessage = `${header}\n${msg.member} | ${msgDate}\n\n${msg.content}`
+      const dateOpts = { dateStyle: 'full', timeStyle: 'long' };
+      const msgDate = new Intl.DateTimeFormat('pt-PT', dateOpts).format(msg.createdAt)
 
-        const files = msg.attachments.map(file => file.proxyURL);
+      const header = `_Mensagem movida_ (${msg.channel})`;
+      let movedMessage = `${header}\n${msg.member} | ${msgDate}\n\n${msg.content}`
 
-        targetChannel.send(movedMessage, {
-          files: files,
-          embeds: msg.embeds
-        });
+      const files = msg.attachments.map(file => file.proxyURL);
 
-        msg.delete();
-        message.delete();
-      }).catch((error) => {
-        console.error(error);
-
-        message.reply(`Ocorreu um erro com o teu comando! Verifica os argumentos e volta a tentar.`);
-        return;
+      channel.send(movedMessage, {
+        files: files,
+        embeds: msg.embeds
       });
+
+      msg.delete();
+    });
   }
-}
-
-function parseMessageId(content) {
-  if (content.search(/^(https:\/\/discord.com\/channels\/)/) >= 0)
-    return content.substring(content.lastIndexOf('/') + 1)
-
-  return content;
 }
