@@ -38,8 +38,6 @@ class Poll {
   }
 
   render() {
-    console.log('rendering');
-
     const table = this.options.reduce((msg, option) => {
       const { text, emoji, users } = option;
 
