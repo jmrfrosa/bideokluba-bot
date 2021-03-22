@@ -45,7 +45,11 @@ class Poll {
         `${text}${user}${idx+1 !== users.length ? ', ' : '' }`
       ), '');
 
-      return `${msg}${emoji} – ${text}${users.length ? `\n    ${userList}` : ''}\n`
+      const stats = this.#optionStats(option);
+      const statsText = `**${stats.numReacts} (${(stats.percent * 100).toFixed(1)}%)**`;
+      const usersText = `\n    ${userList}`;
+
+      return `${msg}${emoji} – ${text}${users.length ? ` - ${statsText}${usersText}` : ''}\n`
     }, '');
 
     return `${this.header}\n${table}`;
@@ -81,6 +85,18 @@ class Poll {
 
   #validReactions() {
     return this.options.map(opt => opt.emoji);
+  }
+
+  #optionStats(option) {
+    const numReacts = option.users.length;
+    const totalReacts = this.options.reduce((sum, opt) => {
+      return sum + opt.users.length;
+    }, 0);
+
+    return {
+      numReacts,
+      percent: numReacts / totalReacts
+    };
   }
 }
 
