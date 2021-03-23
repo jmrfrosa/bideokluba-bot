@@ -6,6 +6,7 @@ const { prefix, token } = require('./config');
 const { db } = require('./util/database.js');
 const { client } = require('./util/client.js');
 const { Poll } = require('./models/Poll');
+const { common } = require('./util/constants');
 
 client.commands = new Collection();
 client.polls = new Collection();
@@ -39,7 +40,7 @@ client.once('ready', async () => {
 client.on('message', message => {
   if(!message.content.startsWith(prefix) || message.author.bot) return;
 
-  const args = message.content.slice(prefix.length).trim().split(' ');
+  const args = message.content.slice(prefix.length).trim().match(common.cmdRegex);
   const commandName = args.shift().toLowerCase();
 
   if(!client.commands.has(commandName)) return;

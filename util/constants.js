@@ -11,8 +11,13 @@ const channels = {
   info: 'info'
 }
 
+const common = {
+  cmdRegex: /(?=\S)[^"\s]*(?:"[^\\"]*(?:\\[\s\S][^\\"]*)*"[^"\s]*)*/g
+}
+
 module.exports = {
   roles,
   imdb,
-  channels
+  channels,
+  common
 }
