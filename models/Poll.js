@@ -1,6 +1,6 @@
 const { client } = require('../util/client.js');
 const { db } = require('../util/database.js');
-const { fetchChannel, fetchMessage } = require('../util/common.js');
+const { fetchChannel, fetchMessage, setDifference } = require('../util/common.js');
 
 class Poll {
   constructor(options, channel, { header = '', message = null }) {
@@ -30,6 +30,15 @@ class Poll {
     return poll;
   }
 
+  async end() {
+    const { id } = this.message;
+
+    client.polls.delete(id)
+    await db.remove({ _id: id });
+
+    console.log(`Poll ${id} was deleted.`);
+  }
+
   async hydrate() {
     this.channel = await fetchChannel({ id: this.channel, fromCache: false });
     this.message = await fetchMessage({ id: this.message, channel: this.channel, fromCache: false });
@@ -46,13 +55,33 @@ class Poll {
       ), '');
 
       const stats = this.#optionStats(option);
-      const statsText = `**${stats.numReacts} (${(stats.percent * 100).toFixed(1)}%)**`;
+      const statsText = `**${stats.numReacts} (${stats.percent}%)**`;
       const usersText = `\n    ${userList}`;
 
       return `${msg}${emoji} – ${text}${users.length ? ` - ${statsText}${usersText}` : ''}\n`
     }, '');
 
     return `${this.header}\n${table}`;
+  }
+
+  report() {
+    const stats = this.options.map(opt => ({ opt, stat: this.#optionStats(opt) }));
+    const topStats = stats.sort((a, b) => b.stat.numReacts - a.stat.numReacts).slice(0, 3);
+    const [top1, top2, top3] = [topStats[0], topStats[1], topStats[2]];
+
+    let excludedUsers = new Set(top2.opt.users.concat(top3.opt.users));
+    excludedUsers = [...setDifference(excludedUsers, top1.opt.users)];
+
+    const excludedText = excludedUsers.length ?
+      `Votaram na 2º e 3º mas não no vencedor: ${excludedUsers.join(', ')}` : '';
+
+    return `A votação terminou e a opção vencedora foi **${top1.opt.emoji} – ${top1.opt.text}** ` +
+      `com **${top1.stat.numReacts} (${top1.stat.percent}%)** votos.` +
+      `\n Votaram: ${top1.opt.users.join(', ')}` +
+      '\n' +
+      `**2º Lugar** – ${top2.opt.emoji} ${top2.opt.text} – ${top2.stat.numReacts} (${top2.stat.percent}%)\n` +
+      `**3º Lugar** – ${top3.opt.emoji} ${top3.opt.text} – ${top3.stat.numReacts} (${top3.stat.percent}%)\n` +
+      `${excludedText}`
   }
 
   async addUser(user, reaction) {
@@ -95,7 +124,7 @@ class Poll {
 
     return {
       numReacts,
-      percent: numReacts / totalReacts
+      percent: ((numReacts / totalReacts) * 100).toFixed(1)
     };
   }
 }

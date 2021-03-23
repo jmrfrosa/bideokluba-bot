@@ -32,9 +32,16 @@ const getUserFromMention = (client, mention) => {
   return client.users.cache.get(id);
 }
 
+const setDifference = (setA, setB) => {
+  let diff = new Set(setA);
+  for(let e of setB) diff.delete(e);
+  return diff;
+}
+
 module.exports = {
   fetchChannel,
   fetchMessage,
   parseMessageId,
-  getUserFromMention
+  getUserFromMention,
+  setDifference
 }

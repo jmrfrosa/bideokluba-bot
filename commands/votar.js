@@ -13,38 +13,50 @@ const defaultOptions = [
   { id: 'next', text: 'Próxima semana', emoji: '⏭️' }
 ]
 
-const validReactions = defaultOptions.map(o => o.emoji);
-
 module.exports = {
   name: 'votar',
   description: 'Criar uma votação para escolher o dia da discussão. `\[weekday]`\ varia de 1 (segunda) a 7 (domingo) e determina quais as datas fechadas.',
   args: true,
-  usage: '[channel]',
+  usage: '[header] [channel] ...[emoji:option]',
   guildOnly: true,
   execute: async (message, args) => {
-    const hasRole = message.member.roles.cache.some(role => role.name === roles.admin);
+    const hasRole = message.member.roles.cache.some(role => ([roles.admin, roles.curator].includes(role.name)));
+
+    const header = args[0] ? args[0].replaceAll('"', '') : 'Em que dia marcamos discussão?';
 
     if (!hasRole) {
       message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
       return;
     }
 
-    const channel = args[0] ? fetchChannel({ name: args[0] }) : message.channel;
+    const channel = args[1] ? fetchChannel({ name: args[1] }) : message.channel;
 
     if (!channel) {
       message.reply(`Não consegui encontrar esse canal! Escreve como está na barra lateral sff.`);
       return;
     }
 
-    let options = defaultOptions.map(opt => ({ ...opt, users: [] }));
+    const optionArgs = args.slice(2);
+    const options = optionArgs.length ?
+      argsToOptions(optionArgs) : defaultOptions.map(opt => ({ ...opt, users: [] }));
 
-    const poll = new Poll(options, channel, { header: 'Em que dia marcamos discussão?' });
+    const reactions = options.map(o => o.emoji);
+
+    const poll = new Poll(options, channel, { header });
     const body = poll.render();
     const sentMsg = await channel.send(body);
 
-    const reactionPromises = validReactions.map((reaction) => sentMsg.react(reaction));
+    const reactionPromises = reactions.map((reaction) => sentMsg.react(reaction));
     await Promise.all(reactionPromises);
 
     poll.save(sentMsg);
   }
+}
+
+function argsToOptions(args) {
+  return args.map(a => {
+    const [emoji, text] = a.split(':');
+
+    return { emoji, text, users: [] };
+  });
 }
