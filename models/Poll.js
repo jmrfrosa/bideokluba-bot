@@ -69,19 +69,20 @@ class Poll {
     const topStats = stats.sort((a, b) => b.stat.numReacts - a.stat.numReacts).slice(0, 3);
     const [top1, top2, top3] = [topStats[0], topStats[1], topStats[2]];
 
-    let excludedUsers = new Set(top2.opt.users.concat(top3.opt.users));
+    let excludedUsers = new Set(top2.opt.users.concat(top3?.opt?.users || []));
     excludedUsers = [...setDifference(excludedUsers, top1.opt.users)];
 
     const excludedText = excludedUsers.length ?
       `Votaram na 2º e 3º mas não no vencedor: ${excludedUsers.join(', ')}` : '';
 
-    return `A votação terminou e a opção vencedora foi **${top1.opt.emoji} – ${top1.opt.text}** ` +
+    const runnerText = [top2, top3].filter(t => t != null).map((t, idx) => (
+      `**${idx + 2}º Lugar** – ${t.opt.emoji} ${t.opt.text} – ${t.stat.numReacts} (${t.stat.percent}%)\n`
+    ));
+
+    return `A opção vencedora está a ser **${top1.opt.emoji} – ${top1.opt.text}** ` +
       `com **${top1.stat.numReacts} (${top1.stat.percent}%)** votos.` +
-      `\n Votaram: ${top1.opt.users.join(', ')}` +
-      '\n' +
-      `**2º Lugar** – ${top2.opt.emoji} ${top2.opt.text} – ${top2.stat.numReacts} (${top2.stat.percent}%)\n` +
-      `**3º Lugar** – ${top3.opt.emoji} ${top3.opt.text} – ${top3.stat.numReacts} (${top3.stat.percent}%)\n` +
-      `${excludedText}`
+      `\n  Votaram nela: ${top1.opt.users.join(', ')}` +
+      `\n${runnerText.join('\n')}\n${excludedText}`
   }
 
   async addUser(user, reaction) {
@@ -124,7 +125,7 @@ class Poll {
 
     return {
       numReacts,
-      percent: ((numReacts / totalReacts) * 100).toFixed(1)
+      percent: ((numReacts / totalReacts || 0) * 100).toFixed(1)
     };
   }
 }

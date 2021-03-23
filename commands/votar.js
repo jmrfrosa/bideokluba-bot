@@ -1,17 +1,6 @@
 const { Poll } = require('../models/Poll.js');
 const { fetchChannel } = require('../util/common.js');
-const { roles } = require('../util/constants.js');
-
-const defaultOptions = [
-  { id: 1     , text: 'Segunda'       , emoji: '2️⃣' },
-  { id: 2     , text: 'Terça'         , emoji: '3️⃣' },
-  { id: 3     , text: 'Quarta'        , emoji: '4️⃣' },
-  { id: 4     , text: 'Quinta'        , emoji: '5️⃣' },
-  { id: 5     , text: 'Sexta'         , emoji: '6️⃣' },
-  { id: 6     , text: 'Sábado'        , emoji: '7️⃣' },
-  { id: 7     , text: 'Domingo'       , emoji: '8️⃣' },
-  { id: 'next', text: 'Próxima semana', emoji: '⏭️' }
-]
+const { defaultOptions, roles } = require('../util/constants.js');
 
 module.exports = {
   name: 'votar',

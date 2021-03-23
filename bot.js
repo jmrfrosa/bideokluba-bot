@@ -67,7 +67,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
   const messageId = reaction.message.id;
   const runningPoll = client.polls.get(messageId);
-  if(runningPoll) await runningPoll.removeUser(user, reaction);;
+  if(runningPoll) await runningPoll.removeUser(user, reaction);
 });
 
 client.login(token);
