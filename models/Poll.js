@@ -3,15 +3,35 @@ const { db } = require('../util/database.js');
 const { fetchChannel, fetchMessage, setDifference } = require('../util/common.js');
 
 class Poll {
-  constructor(options, channel, { header = '', message = null }) {
-    this.message = message;
+  constructor({ options, channel, message = null, header = '' }) {
     this.options = options;
     this.channel = channel;
+    this.message = message;
     this.header  = header;
   }
 
-  async fetch() {
-    return db.findOne({ _id: this.message.id });
+  static async fetch(id) {
+    const dbPoll = await db.findOne({ _id: id });
+
+    if(!dbPoll) {
+      console.error(`Poll ${id} was found in the database`); return; }
+
+    const channel = await fetchChannel({ id: dbPoll.channel, fromCache: false });
+
+    if(!channel) {
+      console.error(`Channel ${dbPoll.channel} was not found while fetching poll ${id}!`); return; }
+
+    const message = await fetchMessage({ id, channel, fromCache: false });
+
+    if(!message) {
+      console.error(`Message ${id} was not found in channel ${channel.id}!`); return; }
+
+    return new Poll({
+      message,
+      channel,
+      options: dbPoll.options,
+      header: dbPoll.header
+    });
   }
 
   async save(message) {
@@ -116,14 +136,6 @@ class Poll {
     const { name } = reaction.emoji;
 
     return this.options.find(o => o.emoji === name);
-  }
-
-  #reactionFilter(reaction, _user) {
-    return this.#validReactions().includes(reaction.emoji.name);
-  }
-
-  #validReactions() {
-    return this.options.map(opt => opt.emoji);
   }
 
   #optionStats(option) {

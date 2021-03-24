@@ -31,7 +31,7 @@ module.exports = {
 
     const reactions = options.map(o => o.emoji);
 
-    const poll = new Poll(options, channel, { header });
+    const poll = new Poll({ options, channel, header });
     const body = poll.render();
     const sentMsg = await channel.send(body);
 

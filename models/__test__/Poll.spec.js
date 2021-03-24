@@ -5,7 +5,12 @@ const defaultChannel = 'channel';
 const defaultHeader = 'header';
 const defaultMessage = 'message';
 
-let defaultPoll = new Poll(defaultOptions, defaultChannel, { header: defaultHeader, message: defaultMessage });
+let defaultPoll = new Poll({
+  options: defaultOptions,
+  channel: defaultChannel,
+  message: defaultMessage,
+  header: defaultHeader
+});
 
 test('.new', () => {
   const poll = defaultPoll;
