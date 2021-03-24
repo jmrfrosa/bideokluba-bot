@@ -22,7 +22,8 @@ class Poll {
       channel: this.channel.id,
       model: 'poll',
       options: this.options,
-      header: this.header
+      header: this.header,
+      active: true
     });
 
     client.polls.set(message.id, this);
@@ -34,9 +35,9 @@ class Poll {
     const { id } = this.message;
 
     client.polls.delete(id)
-    await db.remove({ _id: id });
+    await db.update({ _id: id }, { $set: { active: false } })
 
-    console.log(`Poll ${id} was deleted.`);
+    console.log(`Poll ${id} was deactivated.`);
   }
 
   async hydrate() {

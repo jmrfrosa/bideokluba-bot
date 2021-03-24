@@ -20,6 +20,8 @@ client.once('ready', async () => {
   const args = process.argv.slice(2);
   const taskName = args[0];
 
+  if(taskName == 'ls') console.log(tasks);
+
   if(!taskName) {
     console.log('No task name given!');
     return;

@@ -22,7 +22,7 @@ client.once('ready', async () => {
   console.log('Connected to Discord!');
 
   console.log('Fetching existing polls...');
-  const polls = await db.find({ model: 'poll' });
+  const polls = await db.find({ model: 'poll', active: true });
 
   console.log(`Found ${polls.length} polls running.`);
 

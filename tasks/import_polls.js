@@ -31,7 +31,8 @@ module.exports = {
         channel: channel.id,
         model: 'poll',
         options: options,
-        header: 'Em que dia marcamos discussão?'
+        header: 'Em que dia marcamos discussão?',
+        active: true
       });
 
       console.log(`Poll ${poll.id} was inserted into the database`);
