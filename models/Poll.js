@@ -66,24 +66,32 @@ class Poll {
   }
 
   report() {
-    const stats = this.options.map(opt => ({ opt, stat: this.#optionStats(opt) }));
-    const topStats = stats.sort((a, b) => b.stat.numReacts - a.stat.numReacts).slice(0, 3);
-    const [top1, top2, top3] = [topStats[0], topStats[1], topStats[2]];
+    const stats = this.options
+      .map(opt => ({ opt, stat: this.#optionStats(opt) }))
+      .sort((a, b) => b.stat.numReacts - a.stat.numReacts);
 
-    let excludedUsers = new Set(top2.opt.users.concat(top3?.opt?.users || []));
-    excludedUsers = [...setDifference(excludedUsers, top1.opt.users)];
+    const winner = stats[0];
+
+    const tied = stats.filter(s => s.stat.numReacts === winner.stat.numReacts).map(s => (
+      `**${s.opt.emoji} – ${s.opt.text}**`
+    ));
+    const isTie = tied.length > 1;
+
+    const allUsers = stats.reduce((acc, { opt: { users } }) => ([...acc, ...users]), []);
+    const excludedUsers = [...setDifference(new Set(allUsers), winner.opt.users)];
 
     const excludedText = excludedUsers.length ?
-      `Votaram na 2º e 3º mas não no vencedor: ${excludedUsers.join(', ')}` : '';
+      `Votaram nas restantes mas não no vencedor: ${excludedUsers.join(', ')}` : '';
 
-    const runnerText = [top2, top3].filter(t => t != null).map((t, idx) => (
-      `**${idx + 2}º Lugar** – ${t.opt.emoji} ${t.opt.text} – ${t.stat.numReacts} (${t.stat.percent}%)\n`
+    const runnerText = stats.slice(1,3).filter(t => t != null).map((t, idx) => (
+      `**${idx + 2}º Lugar** – ${t.opt.emoji} ${t.opt.text} – ${t.stat.numReacts} (${t.stat.percent}%)`
     ));
 
-    return `A opção vencedora está a ser **${top1.opt.emoji} – ${top1.opt.text}** ` +
-      `com **${top1.stat.numReacts} (${top1.stat.percent}%)** votos.` +
-      `\n  Votaram nela: ${top1.opt.users.join(', ')}` +
-      `\n${runnerText.join('\n')}\n${excludedText}`
+    const winnerText = `No topo ${isTie ? `estão` : `está`} ${tied.join(', ')}`;
+
+    return `${winnerText} com **${winner.stat.numReacts} (${winner.stat.percent}%)** votos.` +
+      `\n  Votaram ${isTie ? `na primeira`: ''}: ${winner.opt.users.join(', ')}` +
+      `${isTie ? '' : `\n${runnerText.join('\n')}\n${excludedText}`}`
   }
 
   async addUser(user, reaction) {

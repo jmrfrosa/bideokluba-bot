@@ -51,7 +51,6 @@ module.exports = {
           reportMsg.edit(`A votação terminou.\n${reportMsg.content}`);
           break;
         case '👎':
-          removeMsg.delete();
           break;
         default:
           break;
