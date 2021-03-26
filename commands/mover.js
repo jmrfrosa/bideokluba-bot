@@ -8,7 +8,7 @@ module.exports = {
   args: true,
   usage: "<channel_name> ...<message_url>",
   guildOnly: true,
-  execute(message, args) {
+  async execute(message, args) {
     const hasRole = message.member.roles.cache.some(role => role.name === roles.admin);
 
     if (!hasRole) {
@@ -29,7 +29,7 @@ module.exports = {
       return;
     }
 
-    msgs.forEach(async (id) => {
+    for (const id of msgs) {
       const msg = await fetchMessage({ id, channel: message.channel, fromCache: false });
 
       const dateOpts = { dateStyle: 'full', timeStyle: 'long' };
@@ -40,12 +40,12 @@ module.exports = {
 
       const files = msg.attachments.map(file => file.proxyURL);
 
-      channel.send(movedMessage, {
+      await channel.send(movedMessage, {
         files: files,
         embeds: msg.embeds
       });
 
-      msg.delete();
-    });
+      await msg.delete();
+    }
   }
 }
