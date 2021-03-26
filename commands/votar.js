@@ -9,14 +9,14 @@ module.exports = {
   usage: '[header] [channel] ...[emoji:option]',
   guildOnly: true,
   execute: async (message, args) => {
-    const hasRole = message.member.roles.cache.some(role => ([roles.admin, roles.curator].includes(role.name)));
+    // const hasRole = message.member.roles.cache.some(role => ([roles.admin, roles.curator].includes(role.name)));
+
+    // if (!hasRole) {
+    //   message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
+    //   return;
+    // }
 
     const header = args[0] ? args[0].replaceAll('"', '') : 'Em que dia marcamos discussão?';
-
-    if (!hasRole) {
-      message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
-      return;
-    }
 
     const channel = args[1] ? fetchChannel({ name: args[1] }) : message.channel;
 
