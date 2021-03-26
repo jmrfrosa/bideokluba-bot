@@ -116,6 +116,8 @@ class Poll {
 
   async addUser(user, reaction) {
     const option = this.#findOption(reaction);
+    if(!option) return;
+
     option.users = [...option.users, user.toString()];
 
     await db.update({ _id: this.message.id }, { $set: { options: this.options } });
@@ -125,6 +127,8 @@ class Poll {
 
   async removeUser(user, reaction) {
     const option = this.#findOption(reaction);
+    if(!option) return;
+
     option.users = option.users.filter(u => u !== user.toString());
 
     await db.update({ _id: this.message.id }, { $set: { options: this.options } });
