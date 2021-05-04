@@ -1,6 +1,8 @@
 const roles = {
   admin: 'Fundador',
-  curator: 'Curador'
+  moderador: 'Moderador',
+  curator: 'Curador',
+  active: 'Activo'
 }
 
 const imdb = {
@@ -8,7 +10,8 @@ const imdb = {
 }
 
 const channels = {
-  info: 'info'
+  info: 'info',
+  movies: 'filmes'
 }
 
 const common = {
@@ -26,10 +29,15 @@ const defaultOptions = [
   { text: 'Próxima semana', emoji: '⏭️' }
 ]
 
+const rss = {
+  pollingInterval: 30000
+}
+
 module.exports = {
   roles,
   imdb,
   channels,
   common,
-  defaultOptions
+  defaultOptions,
+  rss
 }

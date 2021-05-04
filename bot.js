@@ -4,6 +4,7 @@ const { token } = require('./config');
 const { client } = require('./util/client.js');
 const { PollLoader } = require('./service/PollLoader.js');
 const { CommandHandler } = require('./service/CommandHandler');
+const { RssHandler } = require('./service/RssHandler');
 
 CommandHandler.loadCommands();
 
@@ -11,6 +12,7 @@ client.once('ready', async () => {
   console.log('Connected to Discord!');
 
   PollLoader.load();
+  RssHandler.start();
 });
 
 client.on('message', message => {
