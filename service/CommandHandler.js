@@ -3,6 +3,7 @@ const { Collection } = require('discord.js');
 const { client } = require('../util/client.js');
 const { prefix } = require('../config.js');
 const { common } = require('../util/constants.js');
+const { hasRole } = require('../util/common.js');
 
 class CommandHandler {
   static loadCommands() {
@@ -25,6 +26,16 @@ class CommandHandler {
     if(!client.commands.has(commandName)) return;
 
     const command = client.commands.get(commandName);
+
+    if(command.roles.length && !hasRole(message.member, command.roles)) {
+      message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
+      return;
+    }
+
+    if(args.length < command.args) {
+      message.reply(`Uso incorrecto, lê as instruções!\n\n\`${prefix}${command.name} ${command.usage}\``);
+      return;
+    }
 
     try {
       command.execute(message, args);

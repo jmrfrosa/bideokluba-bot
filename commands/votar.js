@@ -5,17 +5,11 @@ const { defaultOptions, roles } = require('../util/constants.js');
 module.exports = {
   name: 'votar',
   description: 'Criar uma votação para escolher o dia da discussão. `\[weekday]`\ varia de 1 (segunda) a 7 (domingo) e determina quais as datas fechadas.',
-  args: true,
+  args: 0,
+  roles: [roles.active],
   usage: '[header] [channel] ...[emoji:option]',
   guildOnly: true,
   execute: async (message, args) => {
-    // const hasRole = message.member.roles.cache.some(role => ([roles.admin, roles.curator].includes(role.name)));
-
-    // if (!hasRole) {
-    //   message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
-    //   return;
-    // }
-
     const header = args[0] ? args[0].replaceAll('"', '') : 'Em que dia marcamos discussão?';
 
     const channel = args[1] ? fetchChannel({ name: args[1] }) : message.channel;

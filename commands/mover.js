@@ -5,22 +5,11 @@ const { roles } = require('../util/constants.js');
 module.exports = {
   name: 'mover',
   description: 'Mover uma ou mais mensagens para outro canal',
-  args: true,
+  args: 2,
+  roles: [roles.admin, roles.moderator],
   usage: "<channel_name> ...<message_url>",
   guildOnly: true,
   async execute(message, args) {
-    const hasRole = message.member.roles.cache.some(role => role.name === roles.admin);
-
-    if (!hasRole) {
-      message.reply(`O teu pedido foi recusado, ${message.member}, pára de me assediar.`);
-      return;
-    }
-
-    if(args.length < 2) {
-      message.reply(`Uso incorrecto, lê as instruções!\n\n\`${prefix}${this.name} ${this.usage}\``);
-      return;
-    }
-
     const msgs = args.slice(1).map(mId => parseMessageId(mId));
     const channel = fetchChannel({ name: args[0] });
 

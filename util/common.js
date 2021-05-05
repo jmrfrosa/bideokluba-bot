@@ -15,6 +15,12 @@ const fetchMessage = async ({ id, channel, fromCache = true }) => {
     channel.messages.cache.get(id) : channel.messages.fetch(id);
 }
 
+const fetchCurator = async ({ guild }) => {
+  const role = guild.roles.cache.find(r => r.name === roles.curator)
+
+  return role?.members?.[0];
+}
+
 const parseMessageId = (content) => {
   if (content.search(/^(https:\/\/discord.com\/channels\/)/) >= 0)
     return content.substring(content.lastIndexOf('/') + 1)
@@ -38,10 +44,16 @@ const setDifference = (setA, setB) => {
   return diff;
 }
 
+const hasRole = (member, roles) => {
+  return member.roles.cache.some(r => (roles.includes(r.name)));
+}
+
 module.exports = {
   fetchChannel,
   fetchMessage,
+  fetchCurator,
   parseMessageId,
   getUserFromMention,
+  hasRole,
   setDifference
 }

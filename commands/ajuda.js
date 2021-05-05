@@ -3,7 +3,8 @@ const { prefix } = require('../config');
 module.exports = {
   name: 'ajuda',
   description: 'Mostrar todos os comandos do bot',
-  args: false,
+  args: 0,
+  roles: [],
   guildOnly: false,
   execute(message, _args) {
     const { commands } = message.client;

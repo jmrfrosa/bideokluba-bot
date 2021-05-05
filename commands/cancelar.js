@@ -5,15 +5,11 @@ const Canvas = require('canvas');
 module.exports = {
   name: 'cancelar',
   description: 'Cancela o \`<user1>\` e cria amizade com \`[user2]\` ou com o bot.',
-  args: true,
+  args: 1,
+  roles: [],
   usage: '<user1> [user2]',
   guildOnly: true,
   async execute(message, args) {
-    if(args.length < 1) {
-      message.reply(`Uso incorrecto, lê as instruções!\n\n\`${prefix}${this.name} ${this.usage}\``);
-      return;
-    }
-
     const { client, guild } = message;
 
     const enemyUser = getUserFromMention(client, args[0]);

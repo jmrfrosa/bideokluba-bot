@@ -7,22 +7,11 @@ const validReactions = ['👍', '👎'];
 module.exports = {
   name: 'resultados',
   description: 'Finalizar uma mensagem de voto. Devolve os resultados.',
-  args: true,
+  args: 1,
+  roles: [roles.active],
   usage: '<poll_url>',
   guildOnly: true,
   async execute(message, args) {
-    // const hasRole = message.member.roles.cache.some(role => ([roles.admin, roles.curator].includes(role.name)));
-
-    // if (!hasRole) {
-    //   message.reply(`O teu pedido foi recusado. Pára de me assediar.`);
-    //   return;
-    // }
-
-    if (args.length < 1) {
-      message.reply(`Uso incorrecto, lê as instruções!\n\n\`${prefix}${this.name} ${this.usage}\``);
-      return;
-    }
-
     const pollId = parseMessageId(args[0]);
     const poll = client.polls.get(pollId);
 
