@@ -30,7 +30,7 @@ const defaultOptions = [
 ]
 
 const rss = {
-  pollingInterval: 30000
+  pollingInterval: 600000
 }
 
 module.exports = {
