@@ -1,3 +1,4 @@
+require('log-timestamp');
 require('dotenv').config();
 
 const { token } = require('./config');

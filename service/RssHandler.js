@@ -29,7 +29,7 @@ class RssHandler {
   static async feedParser(handler = new RssHandler()) {
     const parser = handler.parser;
 
-    console.log('Starting to fetch feeds...');
+    console.log('Checking registered feeds...');
     for (const [channelName, feeds] of handler.feeds) {
       const channel = fetchChannel({ name: channelName });
 
@@ -67,9 +67,9 @@ class RssHandler {
 
   listen() {
     console.log("Starting RSS handler.")
-    const parser = this.constructor.feedParser(this);
+    this.#parse();
 
-    this.timerId = setInterval(() => { parser }, rss.pollingInterval);
+    this.timerId = setInterval(() => { this.#parse() }, rss.pollingInterval);
     console.log(`Set polling interval, timer ${this.timerId} is set to repeat in ${rss.pollingInterval / 60_000}m`);
   }
 
@@ -86,6 +86,10 @@ class RssHandler {
       .setDescription(item.title)
 
     return msg;
+  }
+
+  #parse() {
+    this.constructor.feedParser(this);
   }
 }
 
