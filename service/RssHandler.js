@@ -29,6 +29,7 @@ class RssHandler {
   static async feedParser(handler = new RssHandler()) {
     const parser = handler.parser;
 
+    console.log('Starting to fetch feeds...');
     for (const [channelName, feeds] of handler.feeds) {
       const channel = fetchChannel({ name: channelName });
 
@@ -58,8 +59,7 @@ class RssHandler {
         if (handler.firstRun) {
           handler.firstRun = false;
 
-          console.log(`Dry running, ${handler.cache.size} items were cached from the ${author} feed.`);
-          console.log(`Listening every ${rss.pollingInterval / 60_000 }m for new items.`)
+          console.log(`Dry run, ${handler.cache.size} items were cached from the ${author} feed.`);
         }
       }
     }
@@ -67,10 +67,10 @@ class RssHandler {
 
   listen() {
     console.log("Starting RSS handler.")
+    const parser = this.constructor.feedParser(this);
 
-    this.timerId = setInterval(() => {
-      this.constructor.feedParser(this)
-    }, rss.pollingInterval);
+    this.timerId = setInterval(() => { parser }, rss.pollingInterval);
+    console.log(`Set polling interval, timer ${this.timerId} is set to repeat in ${rss.pollingInterval / 60_000}m`);
   }
 
   stop() {
