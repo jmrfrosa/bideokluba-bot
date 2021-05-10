@@ -15,10 +15,8 @@ const fetchMessage = async ({ id, channel, fromCache = true }) => {
     channel.messages.cache.get(id) : channel.messages.fetch(id);
 }
 
-const fetchCurator = async ({ guild }) => {
-  const role = guild.roles.cache.find(r => r.name === roles.curator)
-
-  return role?.members?.[0];
+const fetchRole = async ({ guild, role }) => {
+  return guild.roles.cache.find(r => r.name === role);
 }
 
 const parseMessageId = (content) => {
@@ -51,7 +49,7 @@ const hasRole = (member, roles) => {
 module.exports = {
   fetchChannel,
   fetchMessage,
-  fetchCurator,
+  fetchRole,
   parseMessageId,
   getUserFromMention,
   hasRole,

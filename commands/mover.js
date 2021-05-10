@@ -1,4 +1,3 @@
-const { prefix } = require('../config.js');
 const { fetchChannel, parseMessageId, fetchMessage } = require('../util/common.js');
 const { roles } = require('../util/constants.js');
 

@@ -2,7 +2,8 @@ const roles = {
   admin: 'Fundador',
   moderador: 'Moderador',
   curator: 'Curador',
-  active: 'Activo'
+  active: 'Activo',
+  botLog: 'Bot Lover'
 }
 
 const imdb = {
@@ -11,7 +12,9 @@ const imdb = {
 
 const channels = {
   info: 'info',
-  movies: 'filmes'
+  movies: 'filmes',
+  offtopic: 'offtopic',
+  bot: 'bot'
 }
 
 const common = {
