@@ -43,4 +43,14 @@ client.on('messageReactionRemove', async (reaction, user) => {
   if(runningPoll) await runningPoll.removeUser(user, reaction);
 });
 
+process.on('SIGTERM', signal => {
+  console.log(`Process ${process.pid} received a SIGTERM signal`)
+  process.exit(0)
+})
+
+process.on('SIGINT', signal => {
+  console.log(`Process ${process.pid} has been interrupted`)
+  process.exit(0)
+})
+
 client.login(token);
