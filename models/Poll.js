@@ -16,22 +16,26 @@ class Poll {
     if(!dbPoll) {
       console.error(`Poll ${id} was found in the database`); return; }
 
-    const channel = await fetchChannel({ id: dbPoll.channel, fromCache: false });
+    try {
+      const channel = await fetchChannel({ id: dbPoll.channel, fromCache: false });
 
-    if(!channel) {
-      console.error(`Channel ${dbPoll.channel} was not found while fetching poll ${id}!`); return; }
+      if(!channel) {
+        console.error(`Channel ${dbPoll.channel} was not found while fetching poll ${id}!`); return; }
 
-    const message = await fetchMessage({ id, channel, fromCache: false });
+      const message = await fetchMessage({ id, channel, fromCache: false });
 
-    if(!message) {
-      console.error(`Message ${id} was not found in channel ${channel.id}!`); return; }
+      if(!message) {
+        console.error(`Message ${id} was not found in channel ${channel.id}!`); return; }
 
-    return new Poll({
-      message,
-      channel,
-      options: dbPoll.options,
-      header: dbPoll.header
-    });
+      return new Poll({
+        message,
+        channel,
+        options: dbPoll.options,
+        header: dbPoll.header
+      });
+    } catch (error) {
+      console.error('%O', error);
+    }
   }
 
   async save(message) {

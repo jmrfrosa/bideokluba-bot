@@ -20,6 +20,13 @@ client.on('message', message => {
   CommandHandler.handle(message);
 });
 
+client.on('messageDelete', async (deletedMessage) => {
+  console.log("Message has been deleted!");
+  const messageId = deletedMessage.id;
+
+  PollLoader.unload(messageId);
+});
+
 client.on('messageReactionAdd', async (reaction, user) => {
   if (reaction.partial) return;
 

@@ -18,12 +18,28 @@ class PollLoader {
       const poll = await Poll.fetch(id);
 
       if(!poll) {
-        console.error(`Poll ${id} could not be fetched!`); return; }
+        console.error(`Poll ${id} could not be fetched!`);
+
+        PollLoader.unload(id, true);
+        return;
+      }
 
       client.polls.set(id, poll);
 
       console.log(`Poll ${id} fetched and added to reaction listeners.`);
     });
+  }
+
+  static async unload(id, checkDb = false) {
+    const inClient = client.polls.has(id);
+    const inDb = checkDb ? await db.findOne({ model: 'poll', _id: id }) : false;
+
+    if(inClient || inDb) {
+      console.log(`Poll ${id} has been deleted. Removing from records.`);
+
+      client.polls.delete(id);
+      await db.remove({ model: 'poll', _id: id });
+    }
   }
 }
 
