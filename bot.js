@@ -5,6 +5,7 @@ const { token } = require('./config');
 const { client } = require('./util/client.js');
 const { PollLoader } = require('./service/PollLoader.js');
 const { CommandHandler } = require('./service/CommandHandler');
+const { ReactionHandler } = require('./service/ReactionHandler');
 const { RssHandler } = require('./service/RssHandler');
 
 CommandHandler.loadCommands();
@@ -30,17 +31,13 @@ client.on('messageDelete', async (deletedMessage) => {
 client.on('messageReactionAdd', async (reaction, user) => {
   if (reaction.partial) return;
 
-  const messageId = reaction.message.id;
-  const runningPoll = client.polls.get(messageId);
-  if(runningPoll) await runningPoll.addUser(user, reaction);
+  ReactionHandler.add({ reaction, user });
 });
 
 client.on('messageReactionRemove', async (reaction, user) => {
   if (reaction.partial) return;
 
-  const messageId = reaction.message.id;
-  const runningPoll = client.polls.get(messageId);
-  if(runningPoll) await runningPoll.removeUser(user, reaction);
+  ReactionHandler.remove({ reaction, user });
 });
 
 process.on('SIGTERM', signal => {
