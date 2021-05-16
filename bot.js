@@ -4,17 +4,21 @@ require('dotenv').config();
 const { token } = require('./config');
 const { client } = require('./util/client.js');
 const { PollLoader } = require('./service/PollLoader.js');
+const { EventLoader } = require('./service/EventLoader.js');
 const { CommandHandler } = require('./service/CommandHandler');
 const { ReactionHandler } = require('./service/ReactionHandler');
 const { RssHandler } = require('./service/RssHandler');
+const { WeekLoader } = require('./service/WeekLoader');
 
 CommandHandler.loadCommands();
 
 client.once('ready', async () => {
   console.log('Connected to Discord!');
 
-  PollLoader.load();
-  RssHandler.start();
+  await PollLoader.load();
+  await EventLoader.load();
+  await WeekLoader.load();
+  await RssHandler.start();
 });
 
 client.on('message', message => {
@@ -26,6 +30,7 @@ client.on('messageDelete', async (deletedMessage) => {
   const messageId = deletedMessage.id;
 
   PollLoader.unload(messageId);
+  EventLoader.unload(messageId);
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {

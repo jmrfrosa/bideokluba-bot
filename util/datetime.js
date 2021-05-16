@@ -1,9 +1,12 @@
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
+const isBetween = require('dayjs/plugin/isBetween')
+
 require('dayjs/locale/pt');
 
 dayjs.locale('pt');
 dayjs.extend(customParseFormat);
+dayjs.extend(isBetween);
 
 const dateFormats = [
   'YYYY/MM/DD',

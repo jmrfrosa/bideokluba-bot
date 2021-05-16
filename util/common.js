@@ -19,6 +19,10 @@ const fetchRole = async ({ guild, role }) => {
   return guild.roles.cache.find(r => r.name === role);
 }
 
+const fetchMember = async({ guild, username }) => {
+  return guild.members.cache.find(m => (m.user.username == username));
+}
+
 const parseMessageId = (content) => {
   if (content.search(/^(https:\/\/discord.com\/channels\/)/) >= 0)
     return content.substring(content.lastIndexOf('/') + 1)
@@ -50,6 +54,7 @@ module.exports = {
   fetchChannel,
   fetchMessage,
   fetchRole,
+  fetchMember,
   parseMessageId,
   getUserFromMention,
   hasRole,
