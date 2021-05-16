@@ -103,6 +103,11 @@ class Event {
     }
 
     await this.message.edit(this.render());
+
+    await db.update(
+      { model: Event.modelType, message: this.message.id },
+      { $set: { attendance: this.#serializeAttendance() } }
+    )
   }
 
   async remove() {
@@ -130,11 +135,7 @@ class Event {
   }
 
   serialize() {
-    const attendance = Object.fromEntries(
-      Array.from(this.attendance.entries(), ([state, attendees]) => (
-        [state, [...attendees]]
-      ))
-    );
+    const attendance = this.#serializeAttendance();
 
     return {
       model: Event.modelType,
@@ -165,6 +166,14 @@ class Event {
       week: data.week,
       active: data.active
     }
+  }
+
+  #serializeAttendance() {
+    return Object.fromEntries(
+      Array.from(this.attendance.entries(), ([state, attendees]) => (
+        [state, [...attendees]]
+      ))
+    );
   }
 }
 
