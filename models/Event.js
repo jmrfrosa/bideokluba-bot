@@ -9,6 +9,7 @@ const { Week } = require('./Week');
 
 class Event {
   static modelType = 'event';
+  static embedColor = [243, 67, 64];
   static options = {
     '✅': '✅ vou',
     '❌': '❌ não vou',
@@ -130,12 +131,12 @@ class Event {
     const fields = [calendarField, ...attendance]
 
     return new MessageEmbed()
+      .setAuthor('⤴️ Ver semana', null, this.week.message.url)
       .setThumbnail('https://icons-for-free.com/iconfiles/png/512/calendar-131964752454737242.png')
-      .setColor('#0099ff')
+      .setColor(Event.embedColor)
       .setTitle(this.title)
       .setDescription(this.date.format('dddd, DD/MM'))
       .addFields(...fields)
-      .setTimestamp()
       .setFooter(`Adicionado por ${this.author}`);
   }
 
