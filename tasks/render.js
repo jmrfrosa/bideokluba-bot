@@ -1,5 +1,5 @@
 const { EventLoader } = require('../service/EventLoader.js');
-const { PollLoader } = require('../service/pollLoader.js');
+const { PollLoader } = require('../service/PollLoader.js');
 const { WeekLoader } = require('../service/WeekLoader.js');
 const { client } = require('../util/client.js');
 
