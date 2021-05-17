@@ -92,14 +92,14 @@ class Event {
 
   async updateUser({ user, state }) {
     const member = await fetchMember({ guild: this.message.guild, username: user.username });
-    const nickname = member.nickname;
+    const name = member.displayName;
 
     if(state === Event.options[Event.removalOption]) return await this.remove();
 
     for(const [list, attendees] of this.attendance) {
       list === state ?
-        attendees.add(nickname) :
-        attendees.delete(nickname);
+        attendees.add(name) :
+        attendees.delete(name);
     }
 
     await this.message.edit(this.render());
