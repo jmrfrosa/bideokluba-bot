@@ -4,6 +4,7 @@ const { client } = require("../util/client");
 const { fetchMessage, fetchChannel, fetchMember } = require("../util/common");
 const { db } = require("../util/database");
 const { toDate } = require('../util/datetime');
+const { gCalUrl } = require('../util/events');
 const { Week } = require('./Week');
 
 class Event {
@@ -120,18 +121,22 @@ class Event {
   }
 
   render() {
-    const fields = Array.from(this.attendance.entries(), ([state, attendees]) => {
+    const calendarField = { name: 'Links', value: `[Adicionar ao Google Calendar](${gCalUrl(this)})`, inline: false };
+    const attendance = Array.from(this.attendance.entries(), ([state, attendees]) => {
       const value = attendees.size > 0 ? this.#formatAttendees([...attendees]) : '> -';
 
       return { name: state, value, inline: true }
     });
+    const fields = [calendarField, ...attendance]
 
     return new MessageEmbed()
+      .setThumbnail('https://icons-for-free.com/iconfiles/png/512/calendar-131964752454737242.png')
       .setColor('#0099ff')
       .setTitle(this.title)
-      .setAuthor(this.author)
-      .setDescription(this.date.format('ddd, DD/MM'))
-      .addFields(...fields);
+      .setDescription(this.date.format('dddd, DD/MM'))
+      .addFields(...fields)
+      .setTimestamp()
+      .setFooter(`Adicionado por ${this.author}`);
   }
 
   serialize() {

@@ -81,9 +81,12 @@ class Week {
   render() {
     const sortedEvents = this.events.sort((first, last) => first.date.unix() - last.date.unix());
 
-    const fields = sortedEvents.map(e => (
-      { name: e.title, value: e.date.format('dddd, DD/MM'), inline: false  }
-    ));
+    const fields = sortedEvents.map(e => {
+      const date = e.date.format('dddd, DD/MM');
+      const value = `${date} - [link](${e.message.url})`
+
+      return { name: e.title, value, inline: false  }
+    });
 
     const [startDate, endDate] = [this.weekStart, this.weekEnd].map(d => d.format('DD/MM/YYYY'));
 
