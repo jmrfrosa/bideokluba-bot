@@ -9,7 +9,7 @@
     "canvas": "^2.7.0",
     "dayjs": "^1.10.4",
     "discord.js": "^12.5.1",
-    "dotenv": "^8.2.0",
+    "dotenv": "^9.0.2",
     "log-timestamp": "^0.3.0",
     "nedb-promises": "^4.1.1",
     "omdb-api-pt": "^2.0.1",
