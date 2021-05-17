@@ -82,7 +82,7 @@ class Week {
     const sortedEvents = this.events.sort((first, last) => first.date.unix() - last.date.unix());
 
     const fields = sortedEvents.map(e => (
-      { name: e.title, value: e.date.format('ddd, DD/MM'), inline: false  }
+      { name: e.title, value: e.date.format('dddd, DD/MM'), inline: false  }
     ));
 
     const [startDate, endDate] = [this.weekStart, this.weekEnd].map(d => d.format('DD/MM/YYYY'));
