@@ -121,7 +121,7 @@ class Event {
 
   render() {
     const fields = Array.from(this.attendance.entries(), ([state, attendees]) => {
-      const value = attendees.size > 0 ? `> ${[...attendees].join('\n')}` : '> -';
+      const value = attendees.size > 0 ? this.#formatAttendees([...attendees]) : '> -';
 
       return { name: state, value, inline: true }
     });
@@ -174,6 +174,10 @@ class Event {
         [state, [...attendees]]
       ))
     );
+  }
+
+  #formatAttendees(usernames) {
+    return usernames.map(u => `> ${u}`).join('\n');
   }
 }
 
