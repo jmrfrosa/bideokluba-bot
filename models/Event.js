@@ -72,6 +72,9 @@ class Event {
 
     this.week = week;
     week.addEvent(this);
+
+    // Re-render message to update Week link
+    await this.message.edit(this.render());
   }
 
   async archive() {
@@ -131,7 +134,7 @@ class Event {
     const fields = [calendarField, ...attendance]
 
     return new MessageEmbed()
-      .setAuthor('⤴️ Ver semana', null, this.week.message.url)
+      .setAuthor('⤴️ Ver semana', null, this?.week?.message?.url)
       .setThumbnail('https://icons-for-free.com/iconfiles/png/512/calendar-131964752454737242.png')
       .setColor(Event.embedColor)
       .setTitle(this.title)
