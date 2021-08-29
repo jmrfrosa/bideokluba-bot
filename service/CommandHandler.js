@@ -18,9 +18,9 @@ class CommandHandler {
   }
 
   static handle(message) {
-    if(!message.content.startsWith(prefix) || message.author.bot) return;
+    if(!message?.content || !message.content.startsWith(prefix) || message.author.bot) return;
 
-    const args = message.content.slice(prefix.length).trim().match(common.cmdRegex);
+    const args = CommandHandler.sanitizeArgs(message.content);
     const commandName = args.shift().toLowerCase();
 
     if(!client.commands.has(commandName)) return;
@@ -42,6 +42,15 @@ class CommandHandler {
     } catch(error) {
       console.error(error);
     }
+  }
+
+  static sanitizeArgs(text) {
+    if(!text) return '';
+
+    return text.replace(/[‟“”]/g, '"')
+               .slice(prefix.length)
+               .trim()
+               .match(common.cmdRegex);
   }
 }
 
