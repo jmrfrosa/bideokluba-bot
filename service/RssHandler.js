@@ -4,14 +4,14 @@ const { fetchChannel } = require('../util/common');
 const { channels, rss } = require("../util/constants");
 
 const defaultFeeds = new Map([
-  [channels.movies, [
-    {
-      author: 'Filmin',
-      image: 'https://pbs.twimg.com/profile_images/1328657406851768321/BUtkljK-_400x400.jpg',
-      message: 'Novidades do Filmin',
-      url: 'https://us14.campaign-archive.com/feed?u=a81c865084161bece1a825249&id=7b4fade1c2'
-    }
-  ]]
+  // [channels.movies, [
+  //   {
+  //     author: 'Filmin',
+  //     image: 'https://pbs.twimg.com/profile_images/1328657406851768321/BUtkljK-_400x400.jpg',
+  //     message: 'Novidades do Filmin',
+  //     url: 'https://us14.campaign-archive.com/feed?u=a81c865084161bece1a825249&id=7b4fade1c2'
+  //   }
+  // ]]
 ]);
 
 class RssHandler {
@@ -30,18 +30,19 @@ class RssHandler {
     const parser = handler.parser;
 
     console.log('Checking registered feeds...');
+
     for (const [channelName, feeds] of handler.feeds) {
       const channel = fetchChannel({ name: channelName });
 
-      if(!channel) {
+      if (!channel) {
         console.log("Channel for feed was not found, aborting.");
         return handler.stop();
       }
 
-      for(const { message, author, image, url } of feeds) {
+      for (const { message, author, image, url } of feeds) {
         let feed = await parser.parseURL(url);
 
-        for(const { guid, title, link, isoDate } of feed.items) {
+        for (const { guid, title, link, isoDate } of feed.items) {
           const item = [guid, { title, link, isoDate }]
 
           if (handler.firstRun) {
@@ -67,6 +68,12 @@ class RssHandler {
 
   listen() {
     console.log("Starting RSS handler.")
+
+    if (!this.feeds.length) {
+      console.log("No feeds were found.")
+      return
+    }
+
     this.#parse();
 
     this.timerId = setInterval(() => { this.#parse() }, rss.pollingInterval);
