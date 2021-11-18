@@ -2,6 +2,7 @@ const { Collection } = require('discord.js');
 const { client } = require('../util/client.js');
 const { db } = require('../util/database.js');
 const { Event } = require('../models/Event.js');
+const { now, toDate } = require('../util/datetime.js');
 
 class EventLoader {
   static async add(id) {
@@ -24,13 +25,14 @@ class EventLoader {
 
     console.log('Fetching existing events...');
 
-    let eventIds = await db.find({ model: Event.modelType, active: true });
-    eventIds = eventIds.map(p => p._id);
+    let dbEvents = await db.find({ model: Event.modelType, active: true });
 
-    console.log(`Found ${eventIds.length} events running.`);
+    console.log(`Found ${dbEvents.length} events running.`);
 
-    for(const id of eventIds) {
-      await EventLoader.add(id);
+    for(const event of dbEvents) {
+      const outdatedEvent = event.date && now().isAfter(toDate(event.date))
+
+      if (!outdatedEvent) await EventLoader.add(event._id);
     }
   }
 

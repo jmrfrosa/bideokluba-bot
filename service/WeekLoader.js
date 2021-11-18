@@ -2,6 +2,7 @@ const { Collection } = require('discord.js');
 const { client } = require('../util/client.js');
 const { db } = require('../util/database.js');
 const { Week } = require('../models/Week.js');
+const { now, toDate } = require('../util/datetime.js');
 
 class WeekLoader {
   static async add(id) {
@@ -24,13 +25,14 @@ class WeekLoader {
 
     console.log('Fetching calendar...');
 
-    let weekIds = await db.find({ model: Week.modelType });
-    weekIds = weekIds.map(w => w._id);
+    const dbWeeks = await db.find({ model: Week.modelType });
 
-    console.log(`Found ${weekIds.length} weeks in calendar.`);
+    console.log(`Found ${dbWeeks.length} weeks in calendar.`);
 
-    for(const id of weekIds) {
-      await WeekLoader.add(id);
+    for(const week of dbWeeks) {
+      const outdatedWeek = week.weekEnd && now().isAfter(toDate(week.weekEnd))
+
+      if (!outdatedWeek) await WeekLoader.add(week._id);
     }
 
     WeekLoader.syncEvents();
