@@ -6,7 +6,7 @@ const { db } = require("../util/database");
 
 class Week {
   static modelType = 'week';
-  static channelName = 'eventos';
+  static channelName = 'calendário';
 
   constructor({ channel, weekStart, weekEnd, events = null, message = null }) {
     this.message = message;
