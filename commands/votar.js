@@ -1,5 +1,4 @@
 const { Poll } = require('../models/Poll.js');
-const { fetchChannel } = require('../util/common.js');
 const { roles, toEmoji } = require('../util/constants.js');
 const { now, toDate, isDate } = require('../util/datetime.js');
 
@@ -8,19 +7,18 @@ module.exports = {
   description: 'Criar uma votação. Suporta imensas opções! Perguntem-me simplesmente, é mais fácil.',
   args: 0,
   roles: [roles.active],
-  usage: '[header] [channel] ...[emoji:option] / [data final] / [data inicial] [data final]',
+  usage: '[header] ...[emoji:option] / [data final] / [data inicial] [data final]',
   guildOnly: true,
   execute: async (message, args) => {
     const header = args[0] ? args[0].replaceAll('"', '') : 'Em que dia marcamos discussão?';
-
-    const channel = args[1] ? fetchChannel({ name: args[1] }) : message.channel;
+    const channel = message.channel;
 
     if (!channel) {
       message.reply(`Não consegui encontrar esse canal! Escreve como está na barra lateral sff.`);
       return;
     }
 
-    const optionArgs = args.slice(2);
+    const optionArgs = args.slice(1);
     const options = argsToOptions(optionArgs);
 
     const reactions = options.map(o => o.emoji);
