@@ -10,6 +10,8 @@ module.exports = {
 
     await db.update(query, { $set: { active: false } });
 
+    await db.persistence.compactDatafile();
+
     console.log('Done.');
   }
 }
