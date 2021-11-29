@@ -5,6 +5,7 @@ const { token } = require('./config');
 const { client } = require('./util/client.js');
 const { PollLoader } = require('./service/PollLoader.js');
 const { EventLoader } = require('./service/EventLoader.js');
+const { InteractionHandler } = require('./service/InteractionHandler');
 const { CommandHandler } = require('./service/CommandHandler');
 const { ReactionHandler } = require('./service/ReactionHandler');
 const { RssHandler } = require('./service/RssHandler');
@@ -19,6 +20,10 @@ client.once('ready', async () => {
   await EventLoader.load();
   await WeekLoader.load();
   await RssHandler.start();
+});
+
+client.on('interactionCreate', async interaction => {
+  InteractionHandler.handle(interaction);
 });
 
 client.on('message', message => {

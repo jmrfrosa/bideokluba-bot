@@ -1,16 +1,15 @@
-const fs = require('fs');
 const { Collection } = require('discord.js');
 const { client } = require('../util/client.js');
 const { prefix } = require('../config.js');
 const { common } = require('../util/constants.js');
 const { hasRole } = require('../util/common.js');
+const { loadCommandsFromFilesystem } = require('../util/commands.js');
 
 class CommandHandler {
   static loadCommands() {
     client.commands = new Collection();
 
-    const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-    commandFiles.forEach(file => {
+    loadCommandsFromFilesystem().forEach(file => {
       const command = require(`../commands/${file}`);
 
       client.commands.set(command.name, command);

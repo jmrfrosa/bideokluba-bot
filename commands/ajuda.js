@@ -1,23 +1,24 @@
-const { prefix } = require('../config');
+const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
-  name: 'ajuda',
-  description: 'Mostrar todos os comandos do bot',
-  args: 0,
-  roles: [],
-  guildOnly: false,
-  execute(message, _args) {
-    const { commands } = message.client;
+  data: new SlashCommandBuilder()
+    .setName('ajuda')
+    .setDescription('Mostra ajuda acerca de todos os comandos do bot.'),
+  async execute(interaction) {
+    const { commands } = interaction.client;
 
     let helpMessage = '_Comandos disponíveis:_\n' +
       'Nota: \`<...>\` signifca um argumento obrigatório e \`[...]\` um argumento opcional';
 
     helpMessage += commands.reduce((msg, cmd) => (
-      `${msg}\n**${prefix}${cmd.name}**: ${cmd.description}${cmdUsage(cmd)}`
+      `${msg}\n**/${cmd.commandName}**: ${cmd.commandDescription}${cmdUsage(cmd)}`
     ), '');
 
-    message.channel.send(helpMessage);
-  }
+    interaction.reply({ content: helpMessage, ephemeral: true });
+  },
+  args: 0,
+  roles: [],
+  guildOnly: false
 }
 
 function cmdUsage(command) {
