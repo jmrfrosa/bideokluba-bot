@@ -12,6 +12,7 @@
     "dotenv": "^9.0.2",
     "log-timestamp": "^0.3.0",
     "nedb-promises": "^4.1.1",
+    "node-cron": "^3.0.0",
     "omdb-api-pt": "^2.0.1",
     "rss-parser": "^3.12.0"
   },
