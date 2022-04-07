@@ -51,7 +51,7 @@ class BirthdayHandler {
 
   static scheduler() {
     return client.birthdayScheduler ??= nodeCron.schedule(
-      '* * * * * *',
+      '0 0 * * *',
       BirthdayHandler.checkBirthdays,
       {
         scheduled: false,
