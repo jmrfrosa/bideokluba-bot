@@ -1,5 +1,5 @@
 const { db } = require('../util/database.js');
-const birthdayList = require('../static/birthdays.json');
+const birthdayList = require('../db/birthdays.json');
 
 module.exports = {
   name: 'import_birthdays',
