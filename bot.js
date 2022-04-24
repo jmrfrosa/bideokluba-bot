@@ -9,6 +9,7 @@ const { CommandHandler } = require('./service/CommandHandler');
 const { ReactionHandler } = require('./service/ReactionHandler');
 const { RssHandler } = require('./service/RssHandler');
 const { WeekLoader } = require('./service/WeekLoader');
+const { BirthdayHandler } = require('./service/BirthdayHandler');
 
 CommandHandler.loadCommands();
 
@@ -19,6 +20,7 @@ client.once('ready', async () => {
   await EventLoader.load();
   await WeekLoader.load();
   await RssHandler.start();
+  BirthdayHandler.start();
 });
 
 client.on('message', message => {
