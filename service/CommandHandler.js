@@ -21,7 +21,7 @@ class CommandHandler {
     if(!message?.content || !message.content.startsWith(prefix) || message.author.bot) return;
 
     const args = CommandHandler.sanitizeArgs(message.content);
-    const commandName = args.shift().toLowerCase();
+    const commandName = args?.shift()?.toLowerCase() || '';
 
     if(!client.commands.has(commandName)) return;
 
