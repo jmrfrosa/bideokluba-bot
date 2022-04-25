@@ -1,6 +1,7 @@
 const nodeCron = require('node-cron');
 const { MessageEmbed } = require('discord.js');
 const { client } = require('../util/client');
+const { logger } = require('../util/logger');
 const { fetchChannel, fetchUser } = require('../util/common');
 const { channels } = require('../util/constants');
 const { db } = require('../util/database');
@@ -12,15 +13,17 @@ class BirthdayHandler {
   }
 
   static async checkBirthdays() {
-    console.log('Checking birthdays...')
+    logger.info('Checking birthdays...')
     const birthdays = await db.find({ model: 'birthday' });
 
     const validBirthdays = birthdays.filter(BirthdayHandler.isToday);
 
     if (validBirthdays.length === 0) {
-      console.log('No birthdays found today.');
+      logger.info('No birthdays found today.');
       return;
     }
+
+    logger.info('Valid birthdays were found today: %o', validBirthdays);
 
     const message = await BirthdayHandler.render(validBirthdays);
     const channel = await fetchChannel({ name: channels.offtopic });
@@ -41,7 +44,6 @@ class BirthdayHandler {
 
     const mentions = users.map(user => user.toString()).join(' ');
 
-    // return `📨 Lembrete: PARABÉNS ${mentions}!`
     return new MessageEmbed()
       .setThumbnail('https://icons-for-free.com/iconfiles/png/512/gift+pink+ribbon+icon-1320165657145611265.png')
       .setTitle('📨 Lembretes de Aniversário')
@@ -61,13 +63,13 @@ class BirthdayHandler {
   }
 
   static start() {
-    console.log('Started birthday scheduler!');
+    logger.info('Started birthday scheduler!');
 
     BirthdayHandler.scheduler().start();
   }
 
   static stop() {
-    console.log('Stopped birthday scheduler!');
+    logger.info('Stopped birthday scheduler!');
 
     BirthdayHandler.scheduler().stop();
   }

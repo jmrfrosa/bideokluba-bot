@@ -3,13 +3,14 @@ const { client } = require('../util/client.js');
 const { db } = require('../util/database.js');
 const { Week } = require('../models/Week.js');
 const { now, toDate } = require('../util/datetime.js');
+const { logger } = require('../util/logger.js');
 
 class WeekLoader {
   static async add(id) {
     const week = await Week.fetch({ _id: id });
 
     if(!week) {
-      console.error(`Week ${id} could not be fetched!`);
+      logger.warn(`Week ${id} could not be fetched!`);
 
       WeekLoader.unload(id, true);
       return;
@@ -17,17 +18,17 @@ class WeekLoader {
 
     client.calendarWeeks.set(week.message.id, week);
 
-    console.log(`Calendar week ${id} fetched.`);
+    logger.info(`Calendar week ${id} fetched.`);
   }
 
   static async load() {
     client.calendarWeeks = new Collection();
 
-    console.log('Fetching calendar...');
+    logger.info('Fetching calendar...');
 
     const dbWeeks = await db.find({ model: Week.modelType });
 
-    console.log(`Found ${dbWeeks.length} weeks in calendar.`);
+    logger.info(`Found ${dbWeeks.length} weeks in calendar.`);
 
     for(const week of dbWeeks) {
       const outdatedWeek = week.weekEnd && now().isAfter(toDate(week.weekEnd))
@@ -43,7 +44,7 @@ class WeekLoader {
     const inDb = checkDb ? await db.findOne({ model: Week.modelType, _id: id }) : false;
 
     if(inClient || inDb) {
-      console.log(`Week ${id} has been deleted. Removing from records.`);
+      logger.info(`Week ${id} has been deleted. Removing from records.`);
 
       client.calendarWeeks.delete(id);
       await db.remove({ model: Week.modelType, _id: id });

@@ -4,6 +4,7 @@ const { client } = require('../util/client.js');
 const { prefix } = require('../config.js');
 const { common } = require('../util/constants.js');
 const { hasRole } = require('../util/common.js');
+const { logger } = require('../util/logger.js');
 
 class CommandHandler {
   static loadCommands() {
@@ -19,6 +20,8 @@ class CommandHandler {
 
   static handle(message) {
     if(!message?.content || !message.content.startsWith(prefix) || message.author.bot) return;
+
+    logger.trace(message, 'Prefixed message was found.')
 
     const args = CommandHandler.sanitizeArgs(message.content);
     const commandName = args?.shift()?.toLowerCase() || '';
