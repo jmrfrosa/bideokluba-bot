@@ -35,4 +35,6 @@ client.once('ready', async () => {
   }
 
   task.execute(...args.slice(1));
+
+  client.destroy();
 });

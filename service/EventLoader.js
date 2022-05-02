@@ -3,13 +3,14 @@ const { client } = require('../util/client.js');
 const { db } = require('../util/database.js');
 const { Event } = require('../models/Event.js');
 const { now, toDate } = require('../util/datetime.js');
+const { logger } = require('../util/logger.js');
 
 class EventLoader {
   static async add(id) {
     const event = await Event.fetch({ _id: id });
 
     if(!event) {
-      console.error(`Event ${id} could not be fetched!`);
+      logger.warn(`Event ${id} could not be fetched!`)
 
       EventLoader.unload(id, true);
       return;
@@ -17,17 +18,17 @@ class EventLoader {
 
     client.events.set(event.message.id, event);
 
-    console.log(`Event ${id} fetched and added to reaction listeners.`);
+    logger.info(`Event ${id} fetched and added to reaction listeners.`);
   }
 
   static async load() {
     client.events = new Collection();
 
-    console.log('Fetching existing events...');
+    logger.info('Fetching existing events...');
 
     let dbEvents = await db.find({ model: Event.modelType, active: true });
 
-    console.log(`Found ${dbEvents.length} events running.`);
+    logger.info(`Found ${dbEvents.length} events running.`);
 
     for(const event of dbEvents) {
       const outdatedEvent = event.date && now().isAfter(toDate(event.date))
@@ -41,7 +42,7 @@ class EventLoader {
     const inDb = checkDb ? await db.findOne({ model: Event.modelType, _id: id }) : false;
 
     if(inClient || inDb) {
-      console.log(`Event ${id} has been deleted. Removing from records.`);
+      logger.info(`Event ${id} has been deleted. Removing from records.`);
 
       client.events.delete(id);
       await db.remove({ model: Event.modelType, _id: id });
@@ -49,14 +50,14 @@ class EventLoader {
   }
 
   static async archive(id) {
-    console.log(`Archiving event ${id}. This event can be unarchived at any time.`);
+    logger.info(`Archiving event ${id}. This event can be unarchived at any time.`);
 
     client.events.delete(id);
     await db.update({ model: Event.modelType, _id: id }, { $set: { active: false } });
   }
 
   static async unarchive(id) {
-    console.log(`Unarchiving event ${id}. This event can be archived at any time.`);
+    logger.info(`Unarchiving event ${id}. This event can be archived at any time.`);
 
     EventLoader.add(id);
   }

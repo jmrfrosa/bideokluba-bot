@@ -1,6 +1,7 @@
 const { client } = require('../util/client.js');
 const { db } = require('../util/database.js');
 const { fetchChannel, fetchMessage, setDifference } = require('../util/common.js');
+const { logger } = require('../util/logger.js');
 
 class Poll {
   constructor({ options, channel, message = null, header = '' }) {
@@ -14,18 +15,18 @@ class Poll {
     const dbPoll = await db.findOne({ _id: id });
 
     if(!dbPoll) {
-      console.error(`Poll ${id} was found in the database`); return; }
+      logger.warn(`Poll ${id} was found in the database`); return; }
 
     try {
       const channel = await fetchChannel({ id: dbPoll.channel, fromCache: false });
 
       if(!channel) {
-        console.error(`Channel ${dbPoll.channel} was not found while fetching poll ${id}!`); return; }
+        logger.warn(`Channel ${dbPoll.channel} was not found while fetching poll ${id}!`); return; }
 
       const message = await fetchMessage({ id, channel, fromCache: false });
 
       if(!message) {
-        console.error(`Message ${id} was not found in channel ${channel.id}!`); return; }
+        logger.warn(`Message ${id} was not found in channel ${channel.id}!`); return; }
 
       return new Poll({
         message,
@@ -34,7 +35,7 @@ class Poll {
         header: dbPoll.header
       });
     } catch (error) {
-      console.error('%O', error);
+      logger.error(error);
     }
   }
 
@@ -61,7 +62,7 @@ class Poll {
     client.polls.delete(id)
     await db.update({ _id: id }, { $set: { active: false } })
 
-    console.log(`Poll ${id} was deactivated.`);
+    logger.info(`Poll ${id} was deactivated.`);
   }
 
   async hydrate() {

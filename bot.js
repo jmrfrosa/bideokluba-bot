@@ -1,8 +1,10 @@
 require('log-timestamp');
 require('dotenv').config();
 
+const process = require('process');
 const { token } = require('./config');
 const { client } = require('./util/client.js');
+const { logger } = require('./util/logger.js');
 const { PollLoader } = require('./service/PollLoader.js');
 const { EventLoader } = require('./service/EventLoader.js');
 const { InteractionHandler } = require('./service/InteractionHandler');
@@ -10,16 +12,17 @@ const { CommandHandler } = require('./service/CommandHandler');
 const { ReactionHandler } = require('./service/ReactionHandler');
 const { RssHandler } = require('./service/RssHandler');
 const { WeekLoader } = require('./service/WeekLoader');
+const { BirthdayHandler } = require('./service/BirthdayHandler');
 
 CommandHandler.loadCommands();
 
 client.once('ready', async () => {
-  console.log('Connected to Discord!');
+  logger.info('Connected to Discord!')
 
   await PollLoader.load();
   await EventLoader.load();
   await WeekLoader.load();
-  await RssHandler.start();
+  BirthdayHandler.start();
 });
 
 client.on('interactionCreate', async interaction => {
@@ -31,7 +34,7 @@ client.on('message', message => {
 });
 
 client.on('messageDelete', async (deletedMessage) => {
-  console.log("Message has been deleted!");
+  logger.trace("Message has been deleted!");
   const messageId = deletedMessage.id;
 
   PollLoader.unload(messageId);
@@ -50,14 +53,28 @@ client.on('messageReactionRemove', async (reaction, user) => {
   ReactionHandler.remove({ reaction, user });
 });
 
+process.on('uncaughtException', err => {
+  logger.error(err);
+
+  client.destroy();
+});
+
+process.on('unhandledRejection', err => {
+  logger.error(err);
+
+  client.destroy();
+});
+
 process.on('SIGTERM', signal => {
-  console.log(`Process ${process.pid} received a SIGTERM signal`)
-  process.exit(0)
-})
+  logger.info(`Process ${process.pid} received exit signal ${signal}`);
+
+  client.destroy();
+});
 
 process.on('SIGINT', signal => {
-  console.log(`Process ${process.pid} has been interrupted`)
-  process.exit(0)
-})
+  logger.info(`Process ${process.pid} received exit signal ${signal}`);
+
+  client.destroy();
+});
 
 client.login(token);
