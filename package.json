@@ -2,7 +2,7 @@
   "name": "bideokluba-bot",
   "version": "1.0.0",
   "description": "Bot for Bideokluba",
-  "main": "bot.js",
+  "main": "./dist/index.js",
   "author": "João Rosa",
   "license": "MIT",
   "dependencies": {
@@ -11,9 +11,8 @@
     "canvas": "^2.7.0",
     "dayjs": "^1.10.4",
     "discord-api-types": "^0.24.0",
-    "discord.js": "^13.3.1",
-    "dotenv": "^9.0.2",
-    "log-timestamp": "^0.3.0",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0",
     "nedb-promises": "^4.1.1",
     "node-cron": "^3.0.0",
     "omdb-api-pt": "^2.0.1",
@@ -22,10 +21,23 @@
     "rss-parser": "^3.12.0"
   },
   "scripts": {
-    "start": "node bot.js",
-    "test": "jest --forceExit --detectOpenHandles"
+    "start": "tsc && node -r dotenv/config ./dist/index.js",
+    "build": "tsc",
+    "test": "jest --forceExit --detectOpenHandles",
+    "format": "prettier --config .prettierrc './src/*/**.ts' --write"
   },
   "devDependencies": {
-    "jest": "^26.6.3"
+    "@types/node": "^17.0.31",
+    "@types/node-cron": "^3.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
+    "eslint": "^8.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^26.6.3",
+    "prettier": "2.6.2",
+    "prettier-eslint": "^14.0.2",
+    "typescript": "^4.6.4"
   }
 }
