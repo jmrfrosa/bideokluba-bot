@@ -2,7 +2,6 @@ import { Message, TextChannel } from 'discord.js'
 
 export type PollOption = {
   text: string
-  emoji: string
   users: string[]
 }
 

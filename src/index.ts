@@ -13,7 +13,7 @@ client.once('ready', async () => {
   logger.info('Connected to Discord!')
 
   await CommandDeployer.deploy()
-  // await PollLoader.load()
+  await PollLoader.load()
   await EventLoader.load()
   await WeekLoader.load()
   BirthdayHandler.start()

@@ -4,11 +4,12 @@ import {
   Message,
   MessageActionRow,
   MessageButton,
+  Constants,
 } from 'discord.js'
 import { Poll } from '../../../models/Poll'
 import { CommandRunnerType } from '../../../typings/command.type'
 import { PollOption } from '../../../typings/poll.type'
-import { now, toDate } from '../../../util/datetime'
+import { daysBetween, now, toDate } from '../../../util/datetime'
 import { VoteCommandNames } from '../votação.command'
 
 const defaultHeader = 'Em que dia marcamos discussão?'
@@ -26,8 +27,6 @@ export const MovieVoteRunner: CommandRunnerType = async (interaction) => {
   }
 
   const { startDate, endDate } = getDatesOrDefault(interaction)
-
-  // TODO: If more than 25 days between dates, interrupt
 
   const options = buildOptions(startDate, endDate)
   const rows = buildRows(options, replyId)
@@ -49,11 +48,16 @@ function getDatesOrDefault(interaction: CommandInteraction) {
   )
   const startDate = startDateStr ? toDate(startDateStr) : defaultStartDate
 
-  const defaultEndDate = startDate.add(10, 'day')
+  const defaultEndDate = startDate.add(10, 'days')
   const endDateStr = interaction.options.getString(
     VoteCommandNames.END_DATE_OPT,
   )
-  const endDate = endDateStr ? toDate(endDateStr) : defaultEndDate
+
+  let endDate = endDateStr ? toDate(endDateStr) : defaultEndDate
+
+  if (daysBetween(startDate, endDate) > 25) {
+    endDate = startDate.add(25, 'days')
+  }
 
   return { startDate, endDate }
 }
@@ -65,7 +69,6 @@ function buildOptions(startDate: Dayjs, endDate: Dayjs) {
     { length: daysBetween },
     (_, day): PollOption => ({
       text: startDate.add(day + 1, 'day').format('ddd, DD/MM'),
-      emoji: '😉',
       users: [],
     }),
   )
@@ -85,8 +88,7 @@ function buildRows(options: PollOption[], uniqueId: string) {
       new MessageButton()
         .setCustomId(`${option.text}-${uniqueId}`)
         .setLabel(option.text)
-        .setStyle('SECONDARY')
-        .setEmoji(option.emoji),
+        .setStyle(Constants.MessageButtonStyles.SECONDARY),
     )
 
     const row = new MessageActionRow()

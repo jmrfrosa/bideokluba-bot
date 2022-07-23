@@ -1,4 +1,4 @@
-import { Message, MessageReaction, User } from 'discord.js'
+import { ButtonInteraction, Message, User } from 'discord.js'
 import { client } from '../util/client'
 import { db } from '../util/database'
 import { fetchChannel, fetchMessage, setDifference } from '../util/common'
@@ -75,6 +75,8 @@ export class Poll implements PollInterface {
 
     client.polls?.set(message.id, this)
 
+    logger.info('Poll was saved into database: %o', poll)
+
     return poll
   }
 
@@ -119,7 +121,7 @@ export class Poll implements PollInterface {
 
   render() {
     const table = this.options.reduce((msg, option) => {
-      const { text, emoji, users } = option
+      const { text, users } = option
 
       const userList = users.reduce(
         (text, user, idx) =>
@@ -127,11 +129,11 @@ export class Poll implements PollInterface {
         '',
       )
 
-      const stats = this.#optionStats(option)
+      const stats = this.optionStats(option)
       const statsText = `**${stats.numReacts} (${stats.percent}%)**`
       const usersText = `\n    ${userList}`
 
-      return `${msg}${emoji} – ${text}${
+      return `${msg} – ${text}${
         users.length ? ` - ${statsText}${usersText}` : ''
       }\n`
     }, '')
@@ -141,14 +143,14 @@ export class Poll implements PollInterface {
 
   report() {
     const stats = this.options
-      .map((opt) => ({ opt, stat: this.#optionStats(opt) }))
+      .map((opt) => ({ opt, stat: this.optionStats(opt) }))
       .sort((a, b) => b.stat.numReacts - a.stat.numReacts)
 
     const winner = stats[0]
 
     const tied = stats
       .filter((s) => s.stat.numReacts === winner.stat.numReacts)
-      .map((s) => `**${s.opt.emoji} – ${s.opt.text}**`)
+      .map((s) => `**${s.opt.text}**`)
     const isTie = tied.length > 1
 
     const allUsers = stats.reduce(
@@ -168,9 +170,9 @@ export class Poll implements PollInterface {
       .filter((t) => t != null)
       .map(
         (t, idx) =>
-          `**${idx + 2}º Lugar** – ${t.opt.emoji} ${t.opt.text} – ${
-            t.stat.numReacts
-          } (${t.stat.percent}%)`,
+          `**${idx + 2}º Lugar** – ${t.opt.text} – ${t.stat.numReacts} (${
+            t.stat.percent
+          }%)`,
       )
 
     const winnerText = `No topo ${isTie ? `estão` : `está`} ${tied.join(', ')}`
@@ -184,10 +186,28 @@ export class Poll implements PollInterface {
     )
   }
 
-  async addUser(user: User, reaction: MessageReaction) {
-    const option = this.#findOption(reaction)
-    if (!option) return
+  async handleOptionChoice(interaction: ButtonInteraction) {
+    const option = this.findOption(interaction)
+    if (!option) {
+      logger.error(
+        'Could not find matching option (%o) for interaction: %o',
+        this.options,
+        interaction.customId,
+      )
+      return
+    }
 
+    const user = interaction.user
+
+    if (option?.users.includes(user.toString())) {
+      this.removeUserFromOption(user, option)
+      return
+    }
+
+    this.addUserToOption(user, option)
+  }
+
+  private async addUserToOption(user: User, option: PollOption) {
     option.users = [...option.users, user.toString()]
 
     await db.update(
@@ -195,13 +215,10 @@ export class Poll implements PollInterface {
       { $set: { options: this.options } },
     )
 
-    this.message?.edit(this.render())
+    await this.message?.edit(this.render())
   }
 
-  async removeUser(user: User, reaction: MessageReaction) {
-    const option = this.#findOption(reaction)
-    if (!option) return
-
+  private async removeUserFromOption(user: User, option: PollOption) {
     option.users = option.users.filter((u) => u !== user.toString())
 
     await db.update(
@@ -209,16 +226,17 @@ export class Poll implements PollInterface {
       { $set: { options: this.options } },
     )
 
-    this.message?.edit(this.render())
+    await this.message?.edit(this.render())
   }
 
-  #findOption(reaction: MessageReaction) {
-    const { name } = reaction.emoji
+  private findOption(interaction: ButtonInteraction) {
+    const { customId } = interaction
 
-    return this.options.find((o) => o.emoji === name)
+    const optionText = customId.split('-')[0]
+    return this.options.find((o) => o.text === optionText)
   }
 
-  #optionStats(option: PollOption) {
+  private optionStats(option: PollOption) {
     const numReacts = option.users.length
     const totalReacts = this.options.reduce((sum, opt) => {
       return sum + opt.users.length

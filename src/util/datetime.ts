@@ -23,3 +23,6 @@ export const now = () => dayjs()
 export const toDate = (dateStr: string) => dayjs(dateStr, dateFormats)
 
 export const isDate = (dateStr: string) => toDate(dateStr).isValid()
+
+export const daysBetween = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
+  startDate.diff(endDate, 'days')

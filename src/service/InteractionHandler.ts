@@ -41,6 +41,7 @@ export class InteractionHandler {
     const messageId = buttonInteraction.message.id
 
     const event = client.events?.get(messageId)
+    const poll = client.polls?.get(messageId)
 
     if (event) {
       const { user, customId } = buttonInteraction as {
@@ -58,6 +59,10 @@ export class InteractionHandler {
       }
 
       event.updateUser({ user, state })
+    }
+
+    if (poll) {
+      poll.handleOptionChoice(buttonInteraction)
     }
 
     await buttonInteraction.deferUpdate()
