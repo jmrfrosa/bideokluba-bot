@@ -17,7 +17,7 @@ export const EventoCommand: CommandInterface = {
     .addSubcommand((subcmdCriar) =>
       subcmdCriar
         .setName('criar')
-        .setDescription('Criar um novo evento e adicionando-o ao calendário')
+        .setDescription('Criar um novo evento, adicionando-o ao calendário')
         .addStringOption((optTitle) =>
           optTitle
             .setName('title')
