@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import * as Canvas from 'canvas'
-import { MessageAttachment, User } from 'discord.js'
+import { AttachmentBuilder, User } from 'discord.js'
 import { CommandInterface } from '@typings/command.type'
 import { logger } from '@util/logger'
 
@@ -48,7 +48,7 @@ export const CancelarCommand: CommandInterface = {
       [friendUser, friendName],
     )
 
-    const attachment = new MessageAttachment(canvas.toBuffer())
+    const attachment = new AttachmentBuilder(canvas.toBuffer())
 
     interaction.editReply({
       content: `AMIZADE CANCELADA COM ${cancelledUser}, O MEU NOVO AMIGO É ${friendUser}`,
@@ -72,10 +72,10 @@ async function renderImage(
     './assets/friendship_ended_template.png',
   )
   const enemyAvatar = await Canvas.loadImage(
-    enemyUser.displayAvatarURL({ format: 'jpg' }),
+    enemyUser.displayAvatarURL({ extension: 'jpg' }),
   )
   const friendAvatar = await Canvas.loadImage(
-    friendUser.displayAvatarURL({ format: 'jpg' }),
+    friendUser.displayAvatarURL({ extension: 'jpg' }),
   )
   const enemyCross = await Canvas.loadImage('./assets/enemy_cross.png')
   const friendCheck = await Canvas.loadImage('./assets/friend_check.png')

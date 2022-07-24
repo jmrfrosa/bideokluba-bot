@@ -1,11 +1,11 @@
-import { CommandInteraction } from 'discord.js'
+import { ChatInputCommandInteraction } from 'discord.js'
 import { CommandRunnerListType } from '@typings/command.type'
 import { InvalidCommandRunner } from './invalid-command.runner'
 
 type RunnerHandlerType = {
   commandName: string
   runnerList: CommandRunnerListType
-  interaction: CommandInteraction
+  interaction: ChatInputCommandInteraction
 }
 
 export const RunnerHandler = async ({

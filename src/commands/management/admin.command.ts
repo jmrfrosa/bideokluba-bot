@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { ChannelType } from 'discord.js'
 import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { RunnerHandler } from '../subcommand.handler'
 import { MoveMessagesRunner } from './subcommands/move-messages.runner'
@@ -26,7 +27,7 @@ export const AdminCommand: CommandInterface = {
           optChannel
             .setName(AdminCommandNames.CHANNEL_OPT)
             .setDescription('Novo canal para onde mover as mensagens')
-            .addChannelType(ChannelType.GuildText)
+            .addChannelTypes(ChannelType.GuildText)
             .setRequired(true),
         )
         .addStringOption((optMessages) =>

@@ -1,3 +1,4 @@
+import { ButtonInteraction, EmbedBuilder, Message, User } from 'discord.js'
 import { client } from '@util/client'
 import { db } from '@util/database'
 import { fetchChannel, fetchMessage, setDifference } from '@util/common'
@@ -125,15 +126,16 @@ export class Poll implements PollInterface {
       )
 
       const stats = this.optionStats(option)
-      const statsText = `**${stats.numReacts} (${stats.percent}%)**`
+      const statsText = `**${stats.numReacts}**`
+      const progressBar = `\n    ${stats.progressBar} (${stats.percent}%)`
       const usersText = `\n    ${userList}`
 
-      return `${msg} – ${text}${
-        users.length ? ` - ${statsText}${usersText}` : ''
+      return `${msg} ‣ ${text}${
+        users.length ? ` - ${statsText}${progressBar}${usersText}` : ''
       }\n`
     }, '')
 
-    return `${this.header}\n${table}`
+    return `🍿 **${this.header}**\n\n${table}`
   }
 
   report() {
@@ -210,7 +212,9 @@ export class Poll implements PollInterface {
       { $set: { options: this.options } },
     )
 
-    await this.message?.edit(this.render())
+    await this.message?.edit({
+      embeds: [new EmbedBuilder().setDescription(this.render())],
+    })
   }
 
   private async removeUserFromOption(user: User, option: PollOption) {
@@ -221,7 +225,9 @@ export class Poll implements PollInterface {
       { $set: { options: this.options } },
     )
 
-    await this.message?.edit(this.render())
+    await this.message?.edit({
+      embeds: [new EmbedBuilder().setDescription(this.render())],
+    })
   }
 
   private findOption(interaction: ButtonInteraction) {
@@ -236,10 +242,27 @@ export class Poll implements PollInterface {
     const totalReacts = this.options.reduce((sum, opt) => {
       return sum + opt.users.length
     }, 0)
+    const percent = (numReacts / totalReacts || 0) * 100
+    const progressBar = this.progressBarBuilder(percent)
 
     return {
       numReacts,
-      percent: ((numReacts / totalReacts || 0) * 100).toFixed(1),
+      percent: percent.toFixed(1),
+      progressBar,
     }
+  }
+
+  private progressBarBuilder(percent: number, barLength = 15) {
+    const filledElement = '█'
+    const emptyElement = '▒'
+
+    const progress = Math.floor((percent / 100) * barLength)
+    const range = [...Array(barLength).keys()]
+
+    return range
+      .map((progressUnit) =>
+        progressUnit < progress ? filledElement : emptyElement,
+      )
+      .join('')
   }
 }

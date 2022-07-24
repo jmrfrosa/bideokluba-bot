@@ -1,4 +1,4 @@
-import { TextChannel } from 'discord.js'
+import { ChannelType, TextChannel } from 'discord.js'
 import { CommandRunnerType } from '@typings/command.type'
 import { fetchMessage } from '@util/common'
 import { logger } from '@util/logger'
@@ -8,7 +8,7 @@ export const MoveMessagesRunner: CommandRunnerType = async (interaction) => {
   await interaction.deferReply()
 
   const channel = interaction.options.getChannel(AdminCommandNames.CHANNEL_OPT)
-  if (channel?.type !== 'GUILD_TEXT') {
+  if (channel?.type !== ChannelType.GuildText) {
     await interaction.editReply({
       content: 'Canal inválido! Tenta novamente.',
     })
@@ -50,7 +50,7 @@ export const MoveMessagesRunner: CommandRunnerType = async (interaction) => {
 
     const files = message.attachments.map((file) => file.proxyURL)
 
-    await channel.send({
+    await (channel as TextChannel).send({
       content: movedMessage,
       files,
       embeds: message.embeds,

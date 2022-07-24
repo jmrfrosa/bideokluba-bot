@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageButton, Constants, Message } from 'discord.js'
+import { ButtonStyle, ActionRowBuilder, ButtonBuilder } from 'discord.js'
 import { CommandRunnerType } from '@typings/command.type'
 import { client } from '@util/client'
 import { parseMessageId } from '@util/common'
@@ -27,7 +27,7 @@ export const ResultsRunner: CommandRunnerType = async (interaction) => {
 
   const components = [buildButtonComponents(replyId)]
 
-  const reportMsg = (await interaction.editReply(report)) as Message<boolean>
+  const reportMsg = await interaction.editReply(report)
   await interaction.followUp({
     content: 'Queres terminar esta votação?',
     ephemeral: true,
@@ -48,20 +48,20 @@ export const ResultsRunner: CommandRunnerType = async (interaction) => {
 }
 
 function buildButtonComponents(uniqueId: string) {
-  const buttonRow = new MessageActionRow()
+  const buttonRow = new ActionRowBuilder<ButtonBuilder>()
   const buttons = [
     {
       customId: `approve-${uniqueId}`,
       emoji: '👍',
-      style: Constants.MessageButtonStyles.SECONDARY,
+      style: ButtonStyle.Secondary,
     },
     {
       customId: `reject-${uniqueId}`,
       emoji: '👎',
-      style: Constants.MessageButtonStyles.SECONDARY,
+      style: ButtonStyle.Secondary,
     },
   ].map((btn) =>
-    new MessageButton()
+    new ButtonBuilder()
       .setCustomId(btn.customId)
       .setEmoji(btn.emoji)
       .setStyle(btn.style),

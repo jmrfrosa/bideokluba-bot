@@ -1,7 +1,14 @@
-import { ColorResolvable, Message, MessageEmbed, User } from 'discord.js'
+import {
+  ColorResolvable,
+  Message,
+  EmbedBuilder,
+  User,
+  ButtonInteraction,
+} from 'discord.js'
 import {
   EventDocumentType,
   EventInterface,
+  EventOptionKeys,
   EventOptionValues,
 } from '@typings/event.type'
 import { client } from '@util/client'
@@ -107,6 +114,8 @@ export class Event implements EventInterface {
     const event = await db.insert(this.serialize())
     client.events?.set(message.id, this)
 
+    logger.info('Event was saved into database: %o', event)
+
     return event
   }
 
@@ -178,7 +187,7 @@ export class Event implements EventInterface {
 
     await db.update(
       { model: Event.modelType, message: this.message?.id },
-      { $set: { attendance: this.#serializeAttendance() } },
+      { $set: { attendance: this.serializeAttendance() } },
     )
   }
 
@@ -205,14 +214,14 @@ export class Event implements EventInterface {
       this.attendance.entries(),
       ([state, attendees]) => {
         const value =
-          attendees.size > 0 ? this.#formatAttendees([...attendees]) : '> -'
+          attendees.size > 0 ? this.formatAttendees([...attendees]) : '> -'
 
         return { name: state, value, inline: true }
       },
     )
     const fields = [calendarField, ...attendance]
 
-    return new MessageEmbed()
+    return new EmbedBuilder()
       .setAuthor({ name: '⤴️ Ver semana', url: weekUrl })
       .setThumbnail(
         'https://icons-for-free.com/iconfiles/png/512/calendar-131964752454737242.png',
@@ -227,7 +236,7 @@ export class Event implements EventInterface {
   serialize() {
     if (typeof this.week === 'string') return
 
-    const attendance = this.#serializeAttendance()
+    const attendance = this.serializeAttendance()
 
     return {
       model: Event.modelType,
@@ -258,7 +267,23 @@ export class Event implements EventInterface {
     }
   }
 
-  #serializeAttendance() {
+  async handleOptionChoice(interaction: ButtonInteraction) {
+    const { user, customId } = interaction
+    const optionId = customId.split('-')[0] as EventOptionKeys
+    const state = Event.options[optionId]
+
+    if (!state) {
+      logger.error(
+        'InteractionHandler#handleButton: Event button interaction received for unknown state: %o | Event options: %o',
+        interaction.customId,
+      )
+      return
+    }
+
+    this.updateUser({ user, state })
+  }
+
+  private serializeAttendance() {
     return Object.fromEntries(
       Array.from(this.attendance.entries(), ([state, attendees]) => [
         state,
@@ -267,7 +292,7 @@ export class Event implements EventInterface {
     )
   }
 
-  #formatAttendees(usernames: string[]) {
+  private formatAttendees(usernames: string[]) {
     return usernames.map((u) => `> ${u}`).join('\n')
   }
 }

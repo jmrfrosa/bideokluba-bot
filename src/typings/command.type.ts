@@ -2,10 +2,10 @@ import {
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from '@discordjs/builders'
-import { CommandInteraction } from 'discord.js'
+import { ChatInputCommandInteraction } from 'discord.js'
 
 export type CommandRunnerType = (
-  interaction: CommandInteraction,
+  interaction: ChatInputCommandInteraction,
 ) => Promise<void>
 
 export type CommandRunnerListType = {

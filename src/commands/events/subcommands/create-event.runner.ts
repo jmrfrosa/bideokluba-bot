@@ -1,20 +1,21 @@
 import {
-  Message,
-  MessageActionRow,
-  MessageButton,
+  ActionRowBuilder,
   TextChannel,
+  ButtonBuilder,
+  ButtonStyle,
+  GuildMember,
 } from 'discord.js'
 import { Event } from '@models/Event'
-import { CommandRunnerType } from '../../../typings/command.type'
-import { fetchChannel } from '../../../util/common'
-import { toDate } from '../../../util/datetime'
-import { logger } from '../../../util/logger'
+import { CommandRunnerType } from '@typings/command.type'
+import { fetchChannel } from '@util/common'
+import { toDate } from '@util/datetime'
+import { logger } from '@util/logger'
 
 export const CreateEventRunner: CommandRunnerType = async (interaction) => {
   const reply = await interaction.deferReply({ fetchReply: true })
   const replyId = reply.id
 
-  const author = interaction.member?.toString()
+  const author = (interaction.member as GuildMember).displayName
 
   if (!author) {
     logger.error(
@@ -43,20 +44,20 @@ export const CreateEventRunner: CommandRunnerType = async (interaction) => {
   const event = new Event({ channel, title, date, author })
   const body = event.render()
 
-  const row = new MessageActionRow()
+  const row = new ActionRowBuilder<ButtonBuilder>()
   Object.keys(Event.options).forEach((option) => {
     row.addComponents(
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`${option}-${replyId}`)
         .setLabel(option)
-        .setStyle('PRIMARY'),
+        .setStyle(ButtonStyle.Secondary),
     )
   })
 
-  const msg = (await interaction.editReply({
+  const msg = await interaction.editReply({
     embeds: [body],
     components: [row],
-  })) as Message<boolean>
+  })
 
   event.save(msg)
 }

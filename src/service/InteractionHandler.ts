@@ -1,6 +1,6 @@
 import {
   ButtonInteraction,
-  CommandInteraction,
+  ChatInputCommandInteraction,
   Interaction,
 } from 'discord.js'
 import { client } from '@util/client'
@@ -9,7 +9,7 @@ import { logger } from '@util/logger'
 
 export class InteractionHandler {
   static async handle(interaction: Interaction) {
-    if (interaction.isCommand()) {
+    if (interaction.isChatInputCommand()) {
       this.handleCommand(interaction)
     }
 
@@ -18,7 +18,7 @@ export class InteractionHandler {
     }
   }
 
-  static async handleCommand(commandInteraction: CommandInteraction) {
+  static async handleCommand(commandInteraction: ChatInputCommandInteraction) {
     const command = commandList.find(
       (c) => c.data.name === commandInteraction.commandName,
     )
@@ -41,21 +41,7 @@ export class InteractionHandler {
     const poll = client.polls?.get(messageId)
 
     if (event) {
-      const { user, customId } = buttonInteraction as {
-        user: User
-        customId: EventOptionKeys
-      }
-      const state = Event.options[customId]
-
-      if (!state) {
-        logger.error(
-          'InteractionHandler#handleButton: Event button interaction received for unknown state: %o',
-          buttonInteraction,
-        )
-        return
-      }
-
-      event.updateUser({ user, state })
+      event.handleOptionChoice(buttonInteraction)
     }
 
     if (poll) {

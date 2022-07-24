@@ -1,5 +1,5 @@
 import nodeCron from 'node-cron'
-import { Client, Collection, Intents } from 'discord.js'
+import { Client, Collection, GatewayIntentBits } from 'discord.js'
 import { Routes } from 'discord-api-types/v9'
 import { config } from '../config'
 import { REST } from '@discordjs/rest'
@@ -17,11 +17,10 @@ type ClientType = Client & {
 }
 
 export const client: ClientType = new Client({
-  partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-  intents: [Intents.FLAGS.GUILDS],
+  intents: [GatewayIntentBits.Guilds],
 })
 
-export const rest = new REST({ version: '9' }).setToken(token)
+export const rest = new REST({ version: '10' }).setToken(token)
 export const guildRoute = Routes.applicationGuildCommands(
   applicationId,
   guildId,

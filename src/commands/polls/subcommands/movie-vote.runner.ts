@@ -1,10 +1,11 @@
 import { Dayjs } from 'dayjs'
 import {
-  CommandInteraction,
-  Message,
-  MessageActionRow,
-  MessageButton,
-  Constants,
+  ButtonStyle,
+  ButtonBuilder,
+  ChatInputCommandInteraction,
+  ChannelType,
+  ActionRowBuilder,
+  EmbedBuilder,
 } from 'discord.js'
 import { Poll } from '@models/Poll'
 import { CommandRunnerType } from '../../../typings/command.type'
@@ -19,7 +20,7 @@ export const MovieVoteRunner: CommandRunnerType = async (interaction) => {
   const replyId = reply.id
 
   const channel = interaction.channel
-  if (channel?.type !== 'GUILD_TEXT') {
+  if (channel?.type !== ChannelType.GuildText) {
     await interaction.editReply({
       content: 'Canal inválido! Tenta novamente.',
     })
@@ -33,15 +34,16 @@ export const MovieVoteRunner: CommandRunnerType = async (interaction) => {
 
   const poll = new Poll({ options, channel, header: defaultHeader })
   const body = poll.render()
-  const sentMsg = (await interaction.editReply({
-    content: body,
+  const embed = new EmbedBuilder().setDescription(body)
+  const sentMsg = await interaction.editReply({
     components: rows,
-  })) as Message<boolean>
+    embeds: [embed],
+  })
 
   poll.save(sentMsg)
 }
 
-function getDatesOrDefault(interaction: CommandInteraction) {
+function getDatesOrDefault(interaction: ChatInputCommandInteraction) {
   const defaultStartDate = now()
   const startDateStr = interaction.options.getString(
     VoteCommandNames.START_DATE_OPT,
@@ -55,8 +57,9 @@ function getDatesOrDefault(interaction: CommandInteraction) {
 
   let endDate = endDateStr ? toDate(endDateStr) : defaultEndDate
 
-  if (daysBetween(startDate, endDate) > 25) {
-    endDate = startDate.add(25, 'days')
+  const daysBetween = endDate.diff(startDate, 'days')
+  if (daysBetween >= 25) {
+    endDate = startDate.add(24, 'days')
   }
 
   return { startDate, endDate }
@@ -85,13 +88,13 @@ function buildRows(options: PollOption[], uniqueId: string) {
     const selectedOptions = options.slice(startingIndex, startingIndex + 5)
 
     const rowComponents = selectedOptions.map((option) =>
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(`${option.text}-${uniqueId}`)
         .setLabel(option.text)
-        .setStyle(Constants.MessageButtonStyles.SECONDARY),
+        .setStyle(ButtonStyle.Secondary),
     )
 
-    const row = new MessageActionRow()
+    const row = new ActionRowBuilder<ButtonBuilder>()
     return row.addComponents(rowComponents)
   })
 }

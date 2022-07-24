@@ -11,6 +11,7 @@ import { CommandDeployer } from '@service/CommandDeployer'
 client.once('ready', async () => {
   logger.info('Connected to Discord!')
 
+  logger.info('Deploying commands...')
   await CommandDeployer.deploy()
   await PollLoader.load()
   await EventLoader.load()
@@ -22,10 +23,6 @@ client.on('interactionCreate', async (interaction) => {
   InteractionHandler.handle(interaction)
 })
 
-// client.on('messageCreate', message => {
-//   CommandHandler.handle(message);
-// });
-
 client.on('messageDelete', async (deletedMessage) => {
   logger.trace('Message has been deleted!')
   const messageId = deletedMessage.id
@@ -33,18 +30,6 @@ client.on('messageDelete', async (deletedMessage) => {
   PollLoader.unload(messageId)
   EventLoader.unload(messageId)
 })
-
-// client.on('messageReactionAdd', async (reaction, user) => {
-//   if (reaction.partial || user.partial) return;
-
-//   ReactionHandler.add({ reaction, user });
-// });
-
-// client.on('messageReactionRemove', async (reaction, user) => {
-//   if (reaction.partial || user.partial) return;
-
-//   ReactionHandler.remove({ reaction, user });
-// });
 
 process.on('uncaughtException', (err) => {
   logger.error(err)

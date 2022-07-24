@@ -1,4 +1,4 @@
-import { Collection, Message, MessageEmbed } from 'discord.js'
+import { Collection, Message, EmbedBuilder } from 'discord.js'
 import { client } from '@util/client'
 import { fetchChannel, fetchMessage } from '@util/common'
 import { toDate } from '@util/datetime'
@@ -91,6 +91,8 @@ export class Week implements WeekInterface {
     const week = await db.insert(this.serialize())
     client.calendarWeeks?.set(message.id, this)
 
+    logger.info('Week was saved into database: %o', week)
+
     return week
   }
 
@@ -150,7 +152,7 @@ export class Week implements WeekInterface {
       d.format('DD/MM/YYYY'),
     )
 
-    return new MessageEmbed()
+    return new EmbedBuilder()
       .setColor('#0099ff')
       .setTitle(`Eventos na semana ${startDate} a ${endDate}`)
       .addFields(...fields)

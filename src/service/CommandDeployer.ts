@@ -1,4 +1,4 @@
-import { RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types'
+import { RESTPostAPIApplicationCommandsJSONBody } from 'discord.js'
 import { commandList } from '@commands/commands'
 import { rest, guildRoute } from '@util/client'
 import { logger } from '@util/logger'
@@ -8,6 +8,7 @@ export class CommandDeployer {
     const jsonCommands: RESTPostAPIApplicationCommandsJSONBody[] = []
 
     for (const command of commandList) {
+      logger.info('Deploying command: %o', command.data)
       jsonCommands.push(command.data.toJSON())
     }
 
