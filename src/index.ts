@@ -1,13 +1,12 @@
 import { config } from './config'
-import { client } from './util/client'
-import { logger } from './util/logger'
-import { PollLoader } from './service/PollLoader'
-import { EventLoader } from './service/EventLoader'
-import { InteractionHandler } from './service/InteractionHandler'
-// import { ReactionHandler } from './service/ReactionHandler'
-import { WeekLoader } from './service/WeekLoader'
-import { BirthdayHandler } from './service/BirthdayHandler'
-import { CommandDeployer } from './service/CommandDeployer'
+import { client } from '@util/client'
+import { logger } from '@util/logger'
+import { PollLoader } from '@service/PollLoader'
+import { EventLoader } from '@service/EventLoader'
+import { InteractionHandler } from '@service/InteractionHandler'
+import { WeekLoader } from '@service/WeekLoader'
+import { BirthdayHandler } from '@service/BirthdayHandler'
+import { CommandDeployer } from '@service/CommandDeployer'
 
 client.once('ready', async () => {
   logger.info('Connected to Discord!')

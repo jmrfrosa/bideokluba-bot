@@ -1,6 +1,6 @@
 import { Dayjs } from 'dayjs'
 import { Collection, Message, TextChannel } from 'discord.js'
-import { Event } from '../models/Event'
+import { Event } from '@models/Event'
 
 export type WeekDocumentType = {
   _id: string

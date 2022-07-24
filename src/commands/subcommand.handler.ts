@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js'
-import { CommandRunnerListType } from '../typings/command.type'
+import { CommandRunnerListType } from '@typings/command.type'
 import { InvalidCommandRunner } from './invalid-command.runner'
 
 type RunnerHandlerType = {

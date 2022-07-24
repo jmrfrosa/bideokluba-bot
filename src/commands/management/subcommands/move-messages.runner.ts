@@ -1,7 +1,7 @@
 import { TextChannel } from 'discord.js'
-import { CommandRunnerType } from '../../../typings/command.type'
-import { fetchMessage } from '../../../util/common'
-import { logger } from '../../../util/logger'
+import { CommandRunnerType } from '@typings/command.type'
+import { fetchMessage } from '@util/common'
+import { logger } from '@util/logger'
 import { AdminCommandNames } from '../admin.command'
 
 export const MoveMessagesRunner: CommandRunnerType = async (interaction) => {

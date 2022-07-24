@@ -1,17 +1,12 @@
 import nodeCron from 'node-cron'
-import { MessageEmbed } from 'discord.js'
-import { client } from '../util/client'
-import { logger } from '../util/logger'
-import { fetchChannel, fetchUser } from '../util/common'
-import { channels } from '../util/constants'
-import { db } from '../util/database'
-import { now, toDate } from '../util/datetime'
-
-type BirthdayDocumentType = {
-  userId: string
-  model: 'birthday'
-  date: string
-}
+import { EmbedBuilder } from 'discord.js'
+import { client } from '@util/client'
+import { logger } from '@util/logger'
+import { fetchChannel, fetchUser } from '@util/common'
+import { channels } from '@util/constants'
+import { db } from '@util/database'
+import { now, toDate } from '@util/datetime'
+import { BirthdayDocumentType } from '@typings/birthday.type'
 
 export class BirthdayHandler {
   static isToday(birthday: BirthdayDocumentType) {
@@ -53,7 +48,7 @@ export class BirthdayHandler {
 
     const mentions = users.map((user) => user.toString()).join(' ')
 
-    return new MessageEmbed()
+    return new EmbedBuilder()
       .setThumbnail(
         'https://icons-for-free.com/iconfiles/png/512/gift+pink+ribbon+icon-1320165657145611265.png',
       )

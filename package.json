@@ -21,7 +21,9 @@
     "rss-parser": "^3.12.0"
   },
   "scripts": {
-    "start": "tsc && node -r dotenv/config ./dist/index.js",
+    "start:js": "tsc && node -r dotenv/config -r tsconfig-paths/require ./dist/index.js",
+    "start": "ts-node -r dotenv/config ./src/index.ts",
+    "start:prod": "ts-node --transpileOnly -r dotenv/config ./src/index.ts",
     "build": "tsc",
     "test": "jest --forceExit --detectOpenHandles",
     "format": "prettier --config .prettierrc './src/*/**.ts' --write"
@@ -33,11 +35,14 @@
     "@typescript-eslint/parser": "^5.22.0",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^3.3.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^26.6.3",
     "prettier": "2.6.2",
     "prettier-eslint": "^14.0.2",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.0.0",
     "typescript": "^4.6.4"
   }
 }

@@ -1,9 +1,9 @@
 import { Collection } from 'discord.js'
-import { client } from '../util/client'
-import { db } from '../util/database'
-import { Week } from '../models/Week'
-import { now, toDate } from '../util/datetime'
-import { logger } from '../util/logger'
+import { client } from '@util/client'
+import { db } from '@util/database'
+import { Week } from '@models/Week'
+import { now, toDate } from '@util/datetime'
+import { logger } from '@util/logger'
 
 type WeekDocumentType = {
   _id: string

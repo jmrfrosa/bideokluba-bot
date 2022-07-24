@@ -1,11 +1,11 @@
 import { Collection, Message, MessageEmbed } from 'discord.js'
-import { client } from '../util/client'
-import { fetchChannel, fetchMessage } from '../util/common'
-import { toDate } from '../util/datetime'
-import { db } from '../util/database'
-import { WeekDocumentType, WeekInterface } from '../typings/week.type'
+import { client } from '@util/client'
+import { fetchChannel, fetchMessage } from '@util/common'
+import { toDate } from '@util/datetime'
+import { db } from '@util/database'
+import { WeekDocumentType, WeekInterface } from '@typings/week.type'
 import { Dayjs } from 'dayjs'
-import { logger } from '../util/logger'
+import { logger } from '@util/logger'
 import { Event } from './Event'
 
 export class Week implements WeekInterface {

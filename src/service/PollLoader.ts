@@ -1,8 +1,8 @@
 import { Collection } from 'discord.js'
-import { client } from '../util/client'
-import { db } from '../util/database'
-import { Poll } from '../models/Poll'
-import { logger } from '../util/logger'
+import { client } from '@util/client'
+import { db } from '@util/database'
+import { Poll } from '@models/Poll'
+import { logger } from '@util/logger'
 
 export class PollLoader {
   static async add(id: string) {

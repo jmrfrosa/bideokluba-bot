@@ -6,10 +6,10 @@ import {
   MessageButton,
   Constants,
 } from 'discord.js'
-import { Poll } from '../../../models/Poll'
+import { Poll } from '@models/Poll'
 import { CommandRunnerType } from '../../../typings/command.type'
 import { PollOption } from '../../../typings/poll.type'
-import { daysBetween, now, toDate } from '../../../util/datetime'
+import { now, toDate } from '@util/datetime'
 import { VoteCommandNames } from '../votação.command'
 
 const defaultHeader = 'Em que dia marcamos discussão?'

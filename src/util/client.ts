@@ -3,9 +3,9 @@ import { Client, Collection, Intents } from 'discord.js'
 import { Routes } from 'discord-api-types/v9'
 import { config } from '../config'
 import { REST } from '@discordjs/rest'
-import { Poll } from '../models/Poll'
-import { Week } from '../models/Week'
-import { Event } from '../models/Event'
+import { Poll } from '@models/Poll'
+import { Week } from '@models/Week'
+import { Event } from '@models/Event'
 
 const { token, applicationId, guildId } = config
 

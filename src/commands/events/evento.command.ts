@@ -1,8 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import {
-  CommandInterface,
-  CommandRunnerListType,
-} from '../../typings/command.type'
+import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { InvalidCommandRunner } from '../invalid-command.runner'
 import { CreateEventRunner } from './subcommands/create-event.runner'
 

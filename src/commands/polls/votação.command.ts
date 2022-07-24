@@ -1,8 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import {
-  CommandInterface,
-  CommandRunnerListType,
-} from '../../typings/command.type'
+import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { RunnerHandler } from '../subcommand.handler'
 import { MovieVoteRunner } from './subcommands/movie-vote.runner'
 import { ResultsRunner } from './subcommands/results.runner'

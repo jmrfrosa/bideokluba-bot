@@ -2,13 +2,10 @@ import {
   ButtonInteraction,
   CommandInteraction,
   Interaction,
-  User,
 } from 'discord.js'
-import { client } from '../util/client'
-import { commandList } from '../commands/commands'
-import { logger } from '../util/logger'
-import { EventOptionKeys } from '../typings/event.type'
-import { Event } from '../models/Event'
+import { client } from '@util/client'
+import { commandList } from '@commands/commands'
+import { logger } from '@util/logger'
 
 export class InteractionHandler {
   static async handle(interaction: Interaction) {

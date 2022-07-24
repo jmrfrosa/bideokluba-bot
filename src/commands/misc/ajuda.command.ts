@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { CommandInterface } from '../../typings/command.type'
+import { CommandInterface } from '@typings/command.type'
 
 export const AjudaCommand: CommandInterface = {
   data: new SlashCommandBuilder()

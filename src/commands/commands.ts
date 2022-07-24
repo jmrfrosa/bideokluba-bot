@@ -1,4 +1,4 @@
-import { CommandInterface } from '../typings/command.type'
+import { CommandInterface } from '@typings/command.type'
 import { EventoCommand } from './events/evento.command'
 import { AdminCommand } from './management/admin.command'
 import { AjudaCommand } from './misc/ajuda.command'

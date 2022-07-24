@@ -1,10 +1,14 @@
 {
+  "extends": "ts-node/node16/tsconfig.json",
+  "ts-node": {
+    "files": true,
+    "require": ["tsconfig-paths/register"]
+  },
   "compilerOptions": {
-    "target": "es2017",
+    "target": "ES2022",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "CommonJS",
-    "rootDir": "./src",
     "allowJs": true,
     "checkJs": true,
     "outDir": "./dist",
@@ -14,7 +18,19 @@
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
-    "incremental": true
+    "incremental": true,
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "@root/*": ["./*"],
+      "@src/*": ["./src/*"],
+      "@commands/*": ["./src/commands/*"],
+      "@service/*": ["./src/service/*"],
+      "@models/*": ["./src/models/*"],
+      "@util/*": ["./src/util/*"],
+      "@typings/*": ["./src/typings/*"]
+    }
   },
   "include": ["./src/**/*.ts"],
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]

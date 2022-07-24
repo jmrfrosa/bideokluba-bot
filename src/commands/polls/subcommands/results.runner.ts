@@ -1,7 +1,7 @@
 import { MessageActionRow, MessageButton, Constants, Message } from 'discord.js'
-import { CommandRunnerType } from '../../../typings/command.type'
-import { client } from '../../../util/client'
-import { parseMessageId } from '../../../util/common'
+import { CommandRunnerType } from '@typings/command.type'
+import { client } from '@util/client'
+import { parseMessageId } from '@util/common'
 import { VoteCommandNames } from '../votação.command'
 
 export const ResultsRunner: CommandRunnerType = async (interaction) => {

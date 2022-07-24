@@ -1,13 +1,8 @@
-import { ButtonInteraction, Message, User } from 'discord.js'
-import { client } from '../util/client'
-import { db } from '../util/database'
-import { fetchChannel, fetchMessage, setDifference } from '../util/common'
-import { logger } from '../util/logger'
-import {
-  PollDocumentType,
-  PollInterface,
-  PollOption,
-} from '../typings/poll.type'
+import { client } from '@util/client'
+import { db } from '@util/database'
+import { fetchChannel, fetchMessage, setDifference } from '@util/common'
+import { logger } from '@util/logger'
+import { PollDocumentType, PollInterface, PollOption } from '@typings/poll.type'
 
 export class Poll implements PollInterface {
   public options

@@ -1,9 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { ChannelType } from 'discord-api-types'
-import {
-  CommandInterface,
-  CommandRunnerListType,
-} from '../../typings/command.type'
+import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { RunnerHandler } from '../subcommand.handler'
 import { MoveMessagesRunner } from './subcommands/move-messages.runner'
 

@@ -3,13 +3,13 @@ import {
   EventDocumentType,
   EventInterface,
   EventOptionValues,
-} from '../typings/event.type'
-import { client } from '../util/client'
-import { fetchMessage, fetchChannel, fetchMember } from '../util/common'
-import { db } from '../util/database'
-import { toDate } from '../util/datetime'
-import { gCalUrl } from '../util/events'
-import { logger } from '../util/logger'
+} from '@typings/event.type'
+import { client } from '@util/client'
+import { fetchMessage, fetchChannel, fetchMember } from '@util/common'
+import { db } from '@util/database'
+import { toDate } from '@util/datetime'
+import { gCalUrl } from '@util/events'
+import { logger } from '@util/logger'
 import { Week } from './Week'
 
 export class Event implements EventInterface {

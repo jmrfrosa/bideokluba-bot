@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import * as Canvas from 'canvas'
 import { MessageAttachment, User } from 'discord.js'
-import { CommandInterface } from '../../typings/command.type'
-import { logger } from '../../util/logger'
+import { CommandInterface } from '@typings/command.type'
+import { logger } from '@util/logger'
 
 type UserWithNameTuple = [User, string]
 

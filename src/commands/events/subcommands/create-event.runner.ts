@@ -4,7 +4,7 @@ import {
   MessageButton,
   TextChannel,
 } from 'discord.js'
-import { Event } from '../../../models/Event'
+import { Event } from '@models/Event'
 import { CommandRunnerType } from '../../../typings/command.type'
 import { fetchChannel } from '../../../util/common'
 import { toDate } from '../../../util/datetime'

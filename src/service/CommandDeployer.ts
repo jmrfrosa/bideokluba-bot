@@ -1,7 +1,7 @@
 import { RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types'
-import { commandList } from '../commands/commands'
-import { rest, guildRoute } from '../util/client'
-import { logger } from '../util/logger'
+import { commandList } from '@commands/commands'
+import { rest, guildRoute } from '@util/client'
+import { logger } from '@util/logger'
 
 export class CommandDeployer {
   static async deploy() {

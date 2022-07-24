@@ -1,4 +1,4 @@
-import { Event } from '../models/Event'
+import { Event } from '@models/Event'
 
 export const gCalUrl = (event: Event) => {
   const baseUrl = 'https://calendar.google.com/calendar/render'

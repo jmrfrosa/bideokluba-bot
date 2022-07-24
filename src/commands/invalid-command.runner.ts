@@ -1,5 +1,5 @@
-import { CommandRunnerType } from '../typings/command.type'
-import { logger } from '../util/logger'
+import { CommandRunnerType } from '@typings/command.type'
+import { logger } from '@util/logger'
 
 export const InvalidCommandRunner: CommandRunnerType = async (interaction) => {
   try {
