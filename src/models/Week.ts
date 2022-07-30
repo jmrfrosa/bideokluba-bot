@@ -1,14 +1,19 @@
+import { WithId } from 'mongodb'
 import { Collection, Message, EmbedBuilder } from 'discord.js'
 import { client } from '@util/client'
 import { fetchChannel, fetchMessage } from '@util/common'
 import { toDate } from '@util/datetime'
-import { db } from '@util/database'
 import { WeekDocumentType, WeekInterface } from '@typings/week.type'
 import { Dayjs } from 'dayjs'
 import { logger } from '@util/logger'
 import { Event } from './Event'
+import { dbInstance } from '../service/DbService'
 
 export class Week implements WeekInterface {
+  static readonly collectionName = 'weeks'
+  static readonly model = dbInstance.db.collection<WeekDocumentType>(
+    this.collectionName,
+  )
   static modelType = 'week'
   static channelName = 'calendário'
 
@@ -44,22 +49,29 @@ export class Week implements WeekInterface {
     return week
   }
 
-  static async fetch(searchParams: Partial<WeekDocumentType>) {
+  static async fetch(searchParams: Partial<WithId<WeekDocumentType>>) {
     const query = Object.fromEntries(
       Object.entries(searchParams).filter(([_, v]) => !!v),
     )
 
     if (!Object.keys(query).length) return
 
-    const week: WeekDocumentType = await db.findOne({
-      model: Week.modelType,
+    const week = await this.model.findOne({
       ...query,
     })
+
+    if (!week) {
+      logger.error(
+        'Something went wrong. Week for query %o was not found.',
+        query,
+      )
+      return
+    }
 
     return Week.hydrate(week)
   }
 
-  static async hydrate(dbObj: WeekDocumentType) {
+  static async hydrate(dbObj: WithId<WeekDocumentType>) {
     const channel = await fetchChannel({ id: dbObj.channel, fromCache: false })
     const message = await fetchMessage({
       id: dbObj.message,
@@ -88,7 +100,14 @@ export class Week implements WeekInterface {
   async save(message: Message) {
     this.message = message
 
-    const week = await db.insert(this.serialize())
+    const serializedWeek = this.serialize()
+
+    if (!serializedWeek) {
+      logger.error('Something went wrong while serializing week: %o', this)
+      return
+    }
+
+    const week = Week.model.insertOne(serializedWeek)
     client.calendarWeeks?.set(message.id, this)
 
     logger.info('Week was saved into database: %o', week)
@@ -110,8 +129,8 @@ export class Week implements WeekInterface {
     this.events.set(eventId, event)
     this.message?.edit({ embeds: [this.render()] })
 
-    await db.update(
-      { model: Week.modelType, message: this.message?.id },
+    await Week.model.updateOne(
+      { message: this.message?.id },
       { $addToSet: { events: eventId } },
     )
   }
@@ -130,8 +149,8 @@ export class Week implements WeekInterface {
     this.events.delete(eventId)
     this.message?.edit({ embeds: [this.render()] })
 
-    await db.update(
-      { model: Week.modelType, message: this.message?.id },
+    await Week.model.updateOne(
+      { message: this.message?.id },
       { $pull: { events: eventId } },
     )
   }
@@ -159,9 +178,17 @@ export class Week implements WeekInterface {
   }
 
   serialize() {
+    if (!this.message || typeof this.message === 'string') {
+      logger.error(
+        'Error while serializing week, properties are not properly hydrated: %o',
+        this,
+      )
+      return
+    }
+
     return {
       model: Week.modelType,
-      message: this.message?.id,
+      message: this.message.id,
       channel: this.channel.id,
       weekStart: this.weekStart.format('DD/MM/YYYY'),
       weekEnd: this.weekEnd.format('DD/MM/YYYY'),

@@ -1,3 +1,4 @@
+import { WithId } from 'mongodb'
 import {
   ColorResolvable,
   Message,
@@ -13,13 +14,14 @@ import {
 } from '@typings/event.type'
 import { client } from '@util/client'
 import { fetchMessage, fetchChannel, fetchMember } from '@util/common'
-import { db } from '@util/database'
 import { toDate } from '@util/datetime'
 import { gCalUrl } from '@util/events'
 import { logger } from '@util/logger'
 import { Week } from './Week'
+import { dbInstance } from '../service/DbService'
 
 export class Event implements EventInterface {
+  static readonly collectionName = 'events'
   static readonly modelType = 'event' as const
   static readonly embedColor: ColorResolvable = [243, 67, 64] as const
   static readonly options = {
@@ -29,6 +31,9 @@ export class Event implements EventInterface {
     '🗑': 'remover',
   } as const
   static readonly removalOption = '🗑' as const
+  static readonly model = dbInstance.db.collection<EventDocumentType>(
+    this.collectionName,
+  )
 
   public title
   public date
@@ -63,22 +68,29 @@ export class Event implements EventInterface {
       attendance || new Map(Object.values(states).map((s) => [s, new Set()]))
   }
 
-  static async fetch(searchParams: Partial<EventDocumentType>) {
+  static async fetch(searchParams: Partial<WithId<EventDocumentType>>) {
     const query = Object.fromEntries(
       Object.entries(searchParams).filter(([_, v]) => !!v),
     )
 
     if (!Object.keys(query).length) return
 
-    const event: EventDocumentType = await db.findOne({
-      model: Event.modelType,
+    const event = await this.model.findOne({
       ...query,
     })
+
+    if (!event) {
+      logger.error(
+        'Something went wrong. Event for query %o was not found.',
+        query,
+      )
+      return
+    }
 
     return Event.hydrate(event)
   }
 
-  static async hydrate(dbObj: EventDocumentType) {
+  static async hydrate(dbObj: WithId<EventDocumentType>) {
     const channel = await fetchChannel({ id: dbObj.channel, fromCache: false })
 
     if (!channel) {
@@ -111,7 +123,14 @@ export class Event implements EventInterface {
     this.message = message
 
     await this.addToWeek()
-    const event = await db.insert(this.serialize())
+    const serializedEvent = this.serialize()
+
+    if (!serializedEvent) {
+      logger.error('Something went wrong while serializing event: %o', this)
+      return
+    }
+
+    const event = Event.model.insertOne(serializedEvent)
     client.events?.set(message.id, this)
 
     logger.info('Event was saved into database: %o', event)
@@ -145,8 +164,8 @@ export class Event implements EventInterface {
 
     client.events?.delete(id)
 
-    return await db.update(
-      { model: Event.modelType, message: id },
+    return await Event.model.updateOne(
+      { message: id },
       { $set: { active: false } },
     )
   }
@@ -159,8 +178,8 @@ export class Event implements EventInterface {
 
     client.events?.set(id, this)
 
-    return await db.update(
-      { model: Event.modelType, message: id },
+    return await Event.model.updateOne(
+      { message: id },
       { $set: { active: true } },
     )
   }
@@ -185,8 +204,8 @@ export class Event implements EventInterface {
 
     await this.message?.edit({ embeds: [this.render()] })
 
-    await db.update(
-      { model: Event.modelType, message: this.message?.id },
+    await Event.model.updateOne(
+      { message: this.message?.id },
       { $set: { attendance: this.serializeAttendance() } },
     )
   }
@@ -198,7 +217,7 @@ export class Event implements EventInterface {
 
     this.week?.removeEvent(this)
 
-    await db.remove({ model: Event.modelType, message: this.message.id }, {})
+    await Event.model.deleteOne({ message: this.message.id }, {})
     await this.message.delete()
   }
 
@@ -234,19 +253,31 @@ export class Event implements EventInterface {
   }
 
   serialize() {
-    if (typeof this.week === 'string') return
+    if (
+      !this.week ||
+      typeof this.week === 'string' ||
+      !this.week.message?.id ||
+      !this.message ||
+      typeof this.message === 'string'
+    ) {
+      logger.error(
+        'Error while serializing event, properties are not properly hydrated: %o',
+        this,
+      )
+      return
+    }
 
     const attendance = this.serializeAttendance()
 
     return {
       model: Event.modelType,
-      message: this.message?.id,
-      channel: this.message?.channel?.id,
+      message: this.message.id,
+      channel: this.message.channel.id,
       title: this.title,
       date: this.date.format('DD/MM/YYYY'),
       author: this.author,
       attendance,
-      week: this.week?.message?.id,
+      week: this.week.message.id,
       active: this.active,
     }
   }

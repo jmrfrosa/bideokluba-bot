@@ -6,9 +6,8 @@ export type PollOption = {
 }
 
 export type PollDocumentType = {
-  _id: string
   channel: string
-  model: 'poll'
+  message: string
   options: PollOption[]
   header: string
   active: boolean

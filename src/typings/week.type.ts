@@ -3,8 +3,6 @@ import { Collection, Message, TextChannel } from 'discord.js'
 import { Event } from '@models/Event'
 
 export type WeekDocumentType = {
-  _id: string
-  model: 'week'
   message: string
   channel: string
   weekStart: string

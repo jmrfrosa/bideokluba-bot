@@ -1,11 +1,17 @@
+import { WithId } from 'mongodb'
 import { ButtonInteraction, EmbedBuilder, Message, User } from 'discord.js'
 import { client } from '@util/client'
-import { db } from '@util/database'
 import { fetchChannel, fetchMessage, setDifference } from '@util/common'
 import { logger } from '@util/logger'
 import { PollDocumentType, PollInterface, PollOption } from '@typings/poll.type'
+import { dbInstance } from '../service/DbService'
 
 export class Poll implements PollInterface {
+  static readonly collectionName = 'polls'
+  static readonly model = dbInstance.db.collection<PollDocumentType>(
+    this.collectionName,
+  )
+
   public options
   public channel
   public message
@@ -18,11 +24,22 @@ export class Poll implements PollInterface {
     this.header = header
   }
 
-  static async fetch(id: string) {
-    const dbPoll: PollDocumentType = await db.findOne({ _id: id })
+  static async fetch(searchParams: Partial<WithId<PollDocumentType>>) {
+    const query = Object.fromEntries(
+      Object.entries(searchParams).filter(([_, v]) => !!v),
+    )
+
+    if (!Object.keys(query).length) return
+
+    const dbPoll = await this.model.findOne({
+      ...query,
+    })
 
     if (!dbPoll) {
-      logger.warn(`Poll ${id} was found in the database`)
+      logger.error(
+        'Something went wrong. Poll for query %o was not found.',
+        query,
+      )
       return
     }
 
@@ -34,15 +51,21 @@ export class Poll implements PollInterface {
 
       if (!channel) {
         logger.warn(
-          `Channel ${dbPoll.channel} was not found while fetching poll ${id}!`,
+          `Channel ${dbPoll.channel} was not found while fetching poll ${dbPoll._id}!`,
         )
         return
       }
 
-      const message = await fetchMessage({ id, channel, fromCache: false })
+      const message = await fetchMessage({
+        id: dbPoll.message,
+        channel,
+        fromCache: false,
+      })
 
       if (!message) {
-        logger.warn(`Message ${id} was not found in channel ${channel.id}!`)
+        logger.warn(
+          `Message ${dbPoll.message} was not found in channel ${channel.id}!`,
+        )
         return
       }
 
@@ -60,10 +83,9 @@ export class Poll implements PollInterface {
   async save(message: Message) {
     this.message = message
 
-    const poll = await db.insert({
-      _id: this.message?.id,
+    const poll = await Poll.model.insertOne({
+      message: this.message.id,
       channel: this.channel.id,
-      model: 'poll',
       options: this.options,
       header: this.header,
       active: true,
@@ -77,20 +99,23 @@ export class Poll implements PollInterface {
   }
 
   async end() {
-    const id = this.message?.id
+    const messageId = this.message?.id
 
-    if (!id) {
+    if (!messageId) {
       logger.error(
-        `Message id: "${id}" was not found while ending poll: %o`,
+        `Message id: "${messageId}" was not found while ending poll: %o`,
         this,
       )
       return
     }
 
-    client.polls?.delete(id)
-    await db.update({ _id: id }, { $set: { active: false } })
+    client.polls?.delete(messageId)
+    await Poll.model.updateOne(
+      { message: messageId },
+      { $set: { active: false } },
+    )
 
-    logger.info(`Poll ${id} was deactivated.`)
+    logger.info(`Poll ${messageId} was deactivated.`)
   }
 
   async hydrate() {
@@ -207,8 +232,8 @@ export class Poll implements PollInterface {
   private async addUserToOption(user: User, option: PollOption) {
     option.users = [...option.users, user.toString()]
 
-    await db.update(
-      { _id: this.message?.id },
+    await Poll.model.updateOne(
+      { message: this.message?.id },
       { $set: { options: this.options } },
     )
 
@@ -220,8 +245,8 @@ export class Poll implements PollInterface {
   private async removeUserFromOption(user: User, option: PollOption) {
     option.users = option.users.filter((u) => u !== user.toString())
 
-    await db.update(
-      { _id: this.message?.id },
+    await Poll.model.updateOne(
+      { message: this.message?.id },
       { $set: { options: this.options } },
     )
 

@@ -1,14 +1,13 @@
+import { ObjectId } from 'mongodb'
 import { Collection, MessageReaction, User } from 'discord.js'
 import { client } from '@util/client'
-import { db } from '@util/database'
 import { Event } from '@models/Event'
 import { now, toDate } from '@util/datetime'
 import { logger } from '@util/logger'
-import { EventDocumentType } from '@typings/event.type'
 
 export class EventLoader {
   static async add(id: string) {
-    const event = await Event.fetch({ _id: id })
+    const event = await Event.fetch({ _id: new ObjectId(id) })
 
     if (!event?.message) {
       logger.warn(`Event ${id} could not be fetched!`)
@@ -27,31 +26,32 @@ export class EventLoader {
 
     logger.info('Fetching existing events...')
 
-    const dbEvents: EventDocumentType[] = await db.find({
-      model: Event.modelType,
-      active: true,
-    })
+    const dbEvents = await Event.model
+      .find({
+        active: true,
+      })
+      .toArray()
 
     logger.info(`Found ${dbEvents.length} events running.`)
 
     for (const event of dbEvents) {
       const outdatedEvent = event.date && now().isAfter(toDate(event.date))
 
-      if (!outdatedEvent) await EventLoader.add(event._id)
+      if (!outdatedEvent) await EventLoader.add(event._id.toString())
     }
   }
 
   static async unload(id: string, checkDb = false) {
     const inClient = client.events?.has(id)
     const inDb = checkDb
-      ? await db.findOne({ model: Event.modelType, _id: id })
+      ? await Event.model.findOne({ _id: new ObjectId(id) })
       : false
 
     if (inClient || inDb) {
       logger.info(`Event ${id} has been deleted. Removing from records.`)
 
       client.events?.delete(id)
-      await db.remove({ model: Event.modelType, _id: id }, {})
+      await Event.model.deleteOne({ _id: new ObjectId(id) }, {})
     }
   }
 
@@ -61,8 +61,8 @@ export class EventLoader {
     )
 
     client.events?.delete(id)
-    await db.update(
-      { model: Event.modelType, _id: id },
+    await Event.model.updateOne(
+      { _id: new ObjectId(id) },
       { $set: { active: false } },
     )
   }
@@ -70,6 +70,11 @@ export class EventLoader {
   static async unarchive(id: string) {
     logger.info(
       `Unarchiving event ${id}. This event can be archived at any time.`,
+    )
+
+    await Event.model.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { active: true } },
     )
 
     EventLoader.add(id)

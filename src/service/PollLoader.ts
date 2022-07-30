@@ -1,21 +1,21 @@
+import { ObjectId } from 'mongodb'
 import { Collection } from 'discord.js'
 import { client } from '@util/client'
-import { db } from '@util/database'
 import { Poll } from '@models/Poll'
 import { logger } from '@util/logger'
 
 export class PollLoader {
   static async add(id: string) {
-    const poll = await Poll.fetch(id)
+    const poll = await Poll.fetch({ _id: new ObjectId(id) })
 
-    if (!poll) {
+    if (!poll?.message) {
       logger.warn(`Poll ${id} could not be fetched!`)
 
       PollLoader.unload(id, true)
       return
     }
 
-    client.polls?.set(id, poll)
+    client.polls?.set(poll.message.id, poll)
 
     logger.info(`Poll ${id} fetched and added to reaction listeners.`)
   }
@@ -25,25 +25,29 @@ export class PollLoader {
 
     logger.info('Fetching existing polls...')
 
-    const activePolls = await db.find({ model: 'poll', active: true })
+    const activePollsDocs = Poll.model.find({ active: true })
+    const activePolls = await activePollsDocs.toArray()
+
     const pollIds = activePolls.map((p) => p._id)
 
     logger.info(`Found ${pollIds.length} polls running.`)
 
     for (const id of pollIds) {
-      await PollLoader.add(id)
+      await PollLoader.add(id.toString())
     }
   }
 
   static async unload(id: string, checkDb = false) {
     const inClient = client.polls?.has(id)
-    const inDb = checkDb ? await db.findOne({ model: 'poll', _id: id }) : false
+    const inDb = checkDb
+      ? await Poll.model.findOne({ _id: new ObjectId(id) })
+      : false
 
     if (inClient || inDb) {
       logger.info(`Poll ${id} has been deleted. Removing from records.`)
 
       client.polls?.delete(id)
-      await db.remove({ model: 'poll', _id: id }, {})
+      await Poll.model.deleteMany({ _id: new ObjectId(id) }, {})
     }
   }
 
@@ -53,7 +57,10 @@ export class PollLoader {
     )
 
     client.polls?.delete(id)
-    await db.update({ model: 'poll', _id: id }, { $set: { active: false } })
+    await Poll.model.updateMany(
+      { _id: new ObjectId(id) },
+      { $set: { active: false } },
+    )
   }
 
   static async unarchive(id: string) {

@@ -1,12 +1,12 @@
-import dayjs from 'dayjs'
+import dayjs, { locale, extend } from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import isBetween from 'dayjs/plugin/isBetween'
 
 import 'dayjs/locale/pt'
 
-dayjs.locale('pt')
-dayjs.extend(customParseFormat)
-dayjs.extend(isBetween)
+locale('pt')
+extend(customParseFormat)
+extend(isBetween)
 
 const dateFormats = [
   'YYYY/MM/DD',

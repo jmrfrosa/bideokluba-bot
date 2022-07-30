@@ -1,0 +1,10 @@
+version: "3"
+services:
+  database:
+    image: mongo:5.0.9
+    container_name: mongodb_bideobot
+    ports:
+      - 27018:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD

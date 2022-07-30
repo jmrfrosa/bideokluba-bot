@@ -7,8 +7,11 @@ import { InteractionHandler } from '@service/InteractionHandler'
 import { WeekLoader } from '@service/WeekLoader'
 import { BirthdayHandler } from '@service/BirthdayHandler'
 import { CommandDeployer } from '@service/CommandDeployer'
+import { dbInstance } from './service/DbService'
 
 client.once('ready', async () => {
+  await dbInstance.connect()
+
   logger.info('Connected to Discord!')
 
   logger.info('Deploying commands...')

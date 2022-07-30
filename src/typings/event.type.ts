@@ -4,10 +4,8 @@ import { Event } from '@models/Event'
 import { Week } from '@models/Week'
 
 export type EventDocumentType = {
-  _id: string
   week: string
   active: boolean
-  model: 'event'
   message: string
   channel: string
   title: string

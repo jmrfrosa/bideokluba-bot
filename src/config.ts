@@ -6,6 +6,7 @@ type configType = {
   token: string
   omdbToken?: string
   dbPath: string
+  dbUrl: string
   guildId: string
   applicationId: string
 }
@@ -18,6 +19,7 @@ export const config: configType = {
   token: process.env.BOT_TOKEN || 'unknown',
   omdbToken: process.env.OMDB_TOKEN || 'unknown',
   dbPath: path.join(appPath, '../db/datastore.db'),
+  dbUrl: process.env.DB_URL || 'unknown',
   guildId: process.env.GUILD_ID || '822532538466566185',
   applicationId: process.env.APPLICATION_ID || '822610005147779082',
 }

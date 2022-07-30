@@ -1,19 +1,30 @@
 import { EmbedBuilder } from '@discordjs/builders'
+import { Birthday } from '@root/src/models/Birthday'
+import { fetchUser } from '@root/src/util/common'
+import { toDate } from '@root/src/util/datetime'
 import { BirthdayDocumentType } from '@typings/birthday.type'
 import { CommandRunnerType } from '@typings/command.type'
-import { db } from '@util/database'
-import { renderBirthdays } from './util'
 
 export const ViewBirthdaysRunner: CommandRunnerType = async (interaction) => {
   await interaction.deferReply({ ephemeral: true })
 
-  const birthdays: BirthdayDocumentType[] = await db.find({
-    model: 'birthday',
-  })
+  const birthdays = await Birthday.model.find({}).toArray()
 
   const embed = new EmbedBuilder().setDescription(
     await renderBirthdays(birthdays),
   )
 
   interaction.editReply({ embeds: [embed] })
+}
+
+async function renderBirthdays(birthdayList: BirthdayDocumentType[]) {
+  const strBirthdays = await Promise.all(
+    birthdayList.map(async (bd) => {
+      const user = await fetchUser({ id: bd.userId })
+
+      return `${user.toString()}: ${toDate(bd.date).format('dddd, DD/MM')}`
+    }),
+  )
+
+  return strBirthdays.join('\n')
 }

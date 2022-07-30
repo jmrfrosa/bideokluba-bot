@@ -1,12 +1,12 @@
-import nodeCron from 'node-cron'
+import { schedule } from 'node-cron'
 import { EmbedBuilder } from 'discord.js'
 import { client } from '@util/client'
 import { logger } from '@util/logger'
 import { fetchChannel, fetchUser } from '@util/common'
 import { channels } from '@util/constants'
-import { db } from '@util/database'
 import { now, toDate } from '@util/datetime'
 import { BirthdayDocumentType } from '@typings/birthday.type'
+import { Birthday } from '../models/Birthday'
 
 export class BirthdayHandler {
   static isToday(birthday: BirthdayDocumentType) {
@@ -16,9 +16,7 @@ export class BirthdayHandler {
   static async checkBirthdays() {
     logger.info('Checking birthdays...')
 
-    const birthdays: BirthdayDocumentType[] = await db.find({
-      model: 'birthday',
-    })
+    const birthdays = await Birthday.model.find({}).toArray()
 
     const validBirthdays = birthdays.filter(BirthdayHandler.isToday)
 
@@ -58,7 +56,7 @@ export class BirthdayHandler {
   }
 
   static scheduler() {
-    return (client.birthdayScheduler ??= nodeCron.schedule(
+    return (client.birthdayScheduler ??= schedule(
       '0 0 * * *',
       BirthdayHandler.checkBirthdays,
       {

@@ -1,4 +1,4 @@
-import Datastore from 'nedb-promises'
 import { config } from '../config'
+import { MongoClient } from 'mongodb'
 
-export const db = Datastore.create(config.dbPath)
+export const dbClient = new MongoClient(config.dbUrl)

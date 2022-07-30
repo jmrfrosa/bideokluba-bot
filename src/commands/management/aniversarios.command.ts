@@ -3,14 +3,12 @@ import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { InvalidCommandRunner } from '../invalid-command.runner'
 import { BirthdaysOffRunner } from './subcommands/birthdays/birthdays-off.runner'
 import { BirthdaysOnRunner } from './subcommands/birthdays/birthdays-on.runner'
-import { ImportBirthdaysRunner } from './subcommands/birthdays/import-birthdays.runner'
 import { ViewBirthdaysRunner } from './subcommands/birthdays/view-birthdays.runner'
 
 const subcommandRunners: CommandRunnerListType = {
   ligar: BirthdaysOnRunner,
   desligar: BirthdaysOffRunner,
   listar: ViewBirthdaysRunner,
-  importar: ImportBirthdaysRunner,
 }
 
 export const AniversáriosCommand: CommandInterface = {
@@ -31,11 +29,6 @@ export const AniversáriosCommand: CommandInterface = {
       subcmdListar
         .setName('listar')
         .setDescription('Ver todos os aniversários registados'),
-    )
-    .addSubcommand((subcmdImportar) =>
-      subcmdImportar
-        .setName('importar')
-        .setDescription('Importar lista de aniversários presente no servidor'),
     ),
   run: async (interaction) => {
     const receivedSubcommand = interaction.options.getSubcommand()
