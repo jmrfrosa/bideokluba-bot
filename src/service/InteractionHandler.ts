@@ -56,7 +56,10 @@ export class InteractionHandler {
       logger.trace('Found poll for interaction %o!', buttonInteraction.customId)
       await poll.handleOptionChoice(buttonInteraction)
     } else {
-      await buttonInteraction.deferUpdate()
+      await buttonInteraction.reply({
+        content: 'O post com que tentaste interagir já não está disponível.',
+        ephemeral: true,
+      })
     }
   }
 
