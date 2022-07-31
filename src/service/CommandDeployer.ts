@@ -8,15 +8,14 @@ export class CommandDeployer {
     const jsonCommands: RESTPostAPIApplicationCommandsJSONBody[] = []
 
     for (const command of commandList) {
-      logger.info('Deploying command: %o', command.data)
       jsonCommands.push(command.data.toJSON())
     }
 
+    logger.info('Deploying %o commands...', jsonCommands.length)
+
     await rest
       .put(guildRoute, { body: jsonCommands })
-      .then(() =>
-        logger.info('Commands were successfully registered in Discord'),
-      )
+      .then(() => logger.info('Commands were successfully registered in Discord'))
       .catch((e) => logger.error(e))
   }
 }

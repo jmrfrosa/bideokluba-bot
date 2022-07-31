@@ -33,9 +33,7 @@ export const AdminCommand: CommandInterface = {
         .addStringOption((optMessages) =>
           optMessages
             .setName(AdminCommandNames.MESSAGES_OPT)
-            .setDescription(
-              'Lista de IDs de mensagens a mover, separados por espaço',
-            )
+            .setDescription('Lista de IDs de mensagens a mover, separados por espaço')
             .setRequired(true),
         ),
     ),

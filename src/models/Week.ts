@@ -11,10 +11,7 @@ import { dbInstance } from '../service/DbService'
 
 export class Week implements WeekInterface {
   static readonly collectionName = 'weeks'
-  static readonly model = dbInstance.db.collection<WeekDocumentType>(
-    this.collectionName,
-  )
-  static modelType = 'week'
+  static readonly model = dbInstance.db.collection<WeekDocumentType>(this.collectionName)
   static channelName = 'calendário'
 
   public message
@@ -50,9 +47,7 @@ export class Week implements WeekInterface {
   }
 
   static async fetch(searchParams: Partial<WithId<WeekDocumentType>>) {
-    const query = Object.fromEntries(
-      Object.entries(searchParams).filter(([_, v]) => !!v),
-    )
+    const query = Object.fromEntries(Object.entries(searchParams).filter(([_, v]) => !!v))
 
     if (!Object.keys(query).length) return
 
@@ -61,10 +56,7 @@ export class Week implements WeekInterface {
     })
 
     if (!week) {
-      logger.error(
-        'Something went wrong. Week for query %o was not found.',
-        query,
-      )
+      logger.error('Something went wrong. Week for query %o was not found.', query)
       return
     }
 
@@ -119,46 +111,32 @@ export class Week implements WeekInterface {
     const eventId = event.message?.id
 
     if (!eventId) {
-      logger.error(
-        'addEvent: attempted to add event with undefined eventId: %o',
-        event,
-      )
+      logger.error('addEvent: attempted to add event with undefined eventId: %o', event)
       return
     }
 
     this.events.set(eventId, event)
     this.message?.edit({ embeds: [this.render()] })
 
-    await Week.model.updateOne(
-      { message: this.message?.id },
-      { $addToSet: { events: eventId } },
-    )
+    await Week.model.updateOne({ message: this.message?.id }, { $addToSet: { events: eventId } })
   }
 
   async removeEvent(event: Event) {
     const eventId = event.message?.id
 
     if (!eventId) {
-      logger.error(
-        'removeEvent: attempted to remove event with undefined eventId: %o',
-        event,
-      )
+      logger.error('removeEvent: attempted to remove event with undefined eventId: %o', event)
       return
     }
 
     this.events.delete(eventId)
     this.message?.edit({ embeds: [this.render()] })
 
-    await Week.model.updateOne(
-      { message: this.message?.id },
-      { $pull: { events: eventId } },
-    )
+    await Week.model.updateOne({ message: this.message?.id }, { $pull: { events: eventId } })
   }
 
   render() {
-    const sortedEvents = this.events.sort(
-      (first, last) => first.date.unix() - last.date.unix(),
-    )
+    const sortedEvents = this.events.sort((first, last) => first.date.unix() - last.date.unix())
 
     const fields = sortedEvents.map((e) => {
       const date = e.date.format('dddd, DD/MM')
@@ -167,9 +145,7 @@ export class Week implements WeekInterface {
       return { name: e.title, value, inline: false }
     })
 
-    const [startDate, endDate] = [this.weekStart, this.weekEnd].map((d) =>
-      d.format('DD/MM/YYYY'),
-    )
+    const [startDate, endDate] = [this.weekStart, this.weekEnd].map((d) => d.format('DD/MM/YYYY'))
 
     return new EmbedBuilder()
       .setColor('#0099ff')
@@ -179,15 +155,11 @@ export class Week implements WeekInterface {
 
   serialize() {
     if (!this.message || typeof this.message === 'string') {
-      logger.error(
-        'Error while serializing week, properties are not properly hydrated: %o',
-        this,
-      )
+      logger.error('Error while serializing week, properties are not properly hydrated: %o', this)
       return
     }
 
     return {
-      model: Week.modelType,
       message: this.message.id,
       channel: this.channel.id,
       weekStart: this.weekStart.format('DD/MM/YYYY'),

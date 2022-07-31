@@ -41,9 +41,7 @@ export class WeekLoader {
 
   static async unload(id: string, checkDb = false) {
     const inClient = client.calendarWeeks?.has(id)
-    const inDb = checkDb
-      ? await Week.model.findOne({ _id: new ObjectId(id) })
-      : false
+    const inDb = checkDb ? await Week.model.findOne({ _id: new ObjectId(id) }) : false
 
     if (inClient || inDb) {
       logger.info(`Week ${id} has been deleted. Removing from records.`)

@@ -56,14 +56,10 @@ export class BirthdayHandler {
   }
 
   static scheduler() {
-    return (client.birthdayScheduler ??= schedule(
-      '0 0 * * *',
-      BirthdayHandler.checkBirthdays,
-      {
-        scheduled: false,
-        timezone: 'Europe/Lisbon',
-      },
-    ))
+    return (client.birthdayScheduler ??= schedule('0 0 * * *', BirthdayHandler.checkBirthdays, {
+      scheduled: false,
+      timezone: 'Europe/Lisbon',
+    }))
   }
 
   static start() {

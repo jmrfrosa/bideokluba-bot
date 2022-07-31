@@ -39,9 +39,7 @@ export class PollLoader {
 
   static async unload(id: string, checkDb = false) {
     const inClient = client.polls?.has(id)
-    const inDb = checkDb
-      ? await Poll.model.findOne({ _id: new ObjectId(id) })
-      : false
+    const inDb = checkDb ? await Poll.model.findOne({ _id: new ObjectId(id) }) : false
 
     if (inClient || inDb) {
       logger.info(`Poll ${id} has been deleted. Removing from records.`)
@@ -52,21 +50,14 @@ export class PollLoader {
   }
 
   static async archive(id: string) {
-    logger.info(
-      `Archiving poll ${id}. This poll can be unarchived at any time.`,
-    )
+    logger.info(`Archiving poll ${id}. This poll can be unarchived at any time.`)
 
     client.polls?.delete(id)
-    await Poll.model.updateMany(
-      { _id: new ObjectId(id) },
-      { $set: { active: false } },
-    )
+    await Poll.model.updateMany({ _id: new ObjectId(id) }, { $set: { active: false } })
   }
 
   static async unarchive(id: string) {
-    logger.info(
-      `Unarchiving poll ${id}. This poll can be archived at any time.`,
-    )
+    logger.info(`Unarchiving poll ${id}. This poll can be archived at any time.`)
 
     PollLoader.add(id)
   }

@@ -32,23 +32,17 @@ export const fetchMessage = async ({
   fromCache: boolean
 }) => {
   if (!channel || !id) {
-    logger.error(
-      `fetchMessage: one or more required arguments were not supplied | %o`,
-      { id, channel },
-    )
+    logger.error(`fetchMessage: one or more required arguments were not supplied | %o`, {
+      id,
+      channel,
+    })
     return
   }
 
   return fromCache ? channel.messages.cache.get(id) : channel.messages.fetch(id)
 }
 
-export const fetchRole = async ({
-  guild,
-  roleName,
-}: {
-  guild: Guild
-  roleName: string
-}) => {
+export const fetchRole = async ({ guild, roleName }: { guild: Guild; roleName: string }) => {
   return guild.roles.cache.find((r) => r.name === roleName)
 }
 
@@ -88,10 +82,7 @@ export const getUserFromMention = (client: Client, mention: string) => {
   return client.users.cache.get(id)
 }
 
-export const setDifference = (
-  setA: Iterable<unknown>,
-  setB: Iterable<unknown>,
-) => {
+export const setDifference = (setA: Iterable<unknown>, setB: Iterable<unknown>) => {
   const diff = new Set(setA)
   for (const e of setB) diff.delete(e)
 
@@ -102,8 +93,6 @@ export const hasRole = (member: GuildMember, roles: string[]) => {
   return member.roles.cache.some((r) => roles.includes(r.name))
 }
 
-export const toEmoji = (
-  text: keyof typeof emojiMap,
-): typeof emojiMap[keyof typeof emojiMap] => {
+export const toEmoji = (text: keyof typeof emojiMap): typeof emojiMap[keyof typeof emojiMap] => {
   return emojiMap[text]
 }

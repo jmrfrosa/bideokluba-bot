@@ -45,15 +45,11 @@ export const MovieVoteRunner: CommandRunnerType = async (interaction) => {
 
 function getDatesOrDefault(interaction: ChatInputCommandInteraction) {
   const defaultStartDate = now()
-  const startDateStr = interaction.options.getString(
-    VoteCommandNames.START_DATE_OPT,
-  )
+  const startDateStr = interaction.options.getString(VoteCommandNames.START_DATE_OPT)
   const startDate = startDateStr ? toDate(startDateStr) : defaultStartDate
 
   const defaultEndDate = startDate.add(10, 'days')
-  const endDateStr = interaction.options.getString(
-    VoteCommandNames.END_DATE_OPT,
-  )
+  const endDateStr = interaction.options.getString(VoteCommandNames.END_DATE_OPT)
 
   let endDate = endDateStr ? toDate(endDateStr) : defaultEndDate
 

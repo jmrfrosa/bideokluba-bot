@@ -8,18 +8,13 @@ export const ResultsRunner: CommandRunnerType = async (interaction) => {
   const reply = await interaction.deferReply({ fetchReply: true })
   const replyId = reply.id
 
-  const idOrUrl = interaction.options.getString(
-    VoteCommandNames.VOTE_ID_OPT,
-    true,
-  )
+  const idOrUrl = interaction.options.getString(VoteCommandNames.VOTE_ID_OPT, true)
 
   const pollId = parseMessageId(idOrUrl)
   const poll = client.polls?.get(pollId)
 
   if (!poll) {
-    await interaction.editReply(
-      'Esta votação não existe ou não se encontra activa!',
-    )
+    await interaction.editReply('Esta votação não existe ou não se encontra activa!')
     return
   }
 
@@ -61,10 +56,7 @@ function buildButtonComponents(uniqueId: string) {
       style: ButtonStyle.Secondary,
     },
   ].map((btn) =>
-    new ButtonBuilder()
-      .setCustomId(btn.customId)
-      .setEmoji(btn.emoji)
-      .setStyle(btn.style),
+    new ButtonBuilder().setCustomId(btn.customId).setEmoji(btn.emoji).setStyle(btn.style),
   )
 
   buttonRow.addComponents(buttons)

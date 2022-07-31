@@ -8,9 +8,7 @@ import { dbInstance } from '../service/DbService'
 
 export class Poll implements PollInterface {
   static readonly collectionName = 'polls'
-  static readonly model = dbInstance.db.collection<PollDocumentType>(
-    this.collectionName,
-  )
+  static readonly model = dbInstance.db.collection<PollDocumentType>(this.collectionName)
 
   public options
   public channel
@@ -25,9 +23,7 @@ export class Poll implements PollInterface {
   }
 
   static async fetch(searchParams: Partial<WithId<PollDocumentType>>) {
-    const query = Object.fromEntries(
-      Object.entries(searchParams).filter(([_, v]) => !!v),
-    )
+    const query = Object.fromEntries(Object.entries(searchParams).filter(([_, v]) => !!v))
 
     if (!Object.keys(query).length) return
 
@@ -36,10 +32,7 @@ export class Poll implements PollInterface {
     })
 
     if (!dbPoll) {
-      logger.error(
-        'Something went wrong. Poll for query %o was not found.',
-        query,
-      )
+      logger.error('Something went wrong. Poll for query %o was not found.', query)
       return
     }
 
@@ -50,9 +43,7 @@ export class Poll implements PollInterface {
       })
 
       if (!channel) {
-        logger.warn(
-          `Channel ${dbPoll.channel} was not found while fetching poll ${dbPoll._id}!`,
-        )
+        logger.warn(`Channel ${dbPoll.channel} was not found while fetching poll ${dbPoll._id}!`)
         return
       }
 
@@ -63,9 +54,7 @@ export class Poll implements PollInterface {
       })
 
       if (!message) {
-        logger.warn(
-          `Message ${dbPoll.message} was not found in channel ${channel.id}!`,
-        )
+        logger.warn(`Message ${dbPoll.message} was not found in channel ${channel.id}!`)
         return
       }
 
@@ -102,18 +91,12 @@ export class Poll implements PollInterface {
     const messageId = this.message?.id
 
     if (!messageId) {
-      logger.error(
-        `Message id: "${messageId}" was not found while ending poll: %o`,
-        this,
-      )
+      logger.error(`Message id: "${messageId}" was not found while ending poll: %o`, this)
       return
     }
 
     client.polls?.delete(messageId)
-    await Poll.model.updateOne(
-      { message: messageId },
-      { $set: { active: false } },
-    )
+    await Poll.model.updateOne({ message: messageId }, { $set: { active: false } })
 
     logger.info(`Poll ${messageId} was deactivated.`)
   }
@@ -145,8 +128,7 @@ export class Poll implements PollInterface {
       const { text, users } = option
 
       const userList = users.reduce(
-        (text, user, idx) =>
-          `${text}${user}${idx + 1 !== users.length ? ', ' : ''}`,
+        (text, user, idx) => `${text}${user}${idx + 1 !== users.length ? ', ' : ''}`,
         '',
       )
 
@@ -155,9 +137,7 @@ export class Poll implements PollInterface {
       const progressBar = `\n    ${stats.progressBar} (${stats.percent}%)`
       const usersText = `\n    ${userList}`
 
-      return `${msg} ‣ ${text}${
-        users.length ? ` - ${statsText}${progressBar}${usersText}` : ''
-      }\n`
+      return `${msg} ‣ ${text}${users.length ? ` - ${statsText}${progressBar}${usersText}` : ''}\n`
     }, '')
 
     return `🍿 **${this.header}**\n\n${table}`
@@ -175,13 +155,8 @@ export class Poll implements PollInterface {
       .map((s) => `**${s.opt.text}**`)
     const isTie = tied.length > 1
 
-    const allUsers = stats.reduce(
-      (acc: string[], { opt: { users } }) => [...acc, ...users],
-      [],
-    )
-    const excludedUsers = [
-      ...setDifference(new Set(allUsers), winner.opt.users),
-    ]
+    const allUsers = stats.reduce((acc: string[], { opt: { users } }) => [...acc, ...users], [])
+    const excludedUsers = [...setDifference(new Set(allUsers), winner.opt.users)]
 
     const excludedText = excludedUsers.length
       ? `Votaram nas restantes mas não no vencedor: ${excludedUsers.join(', ')}`
@@ -192,18 +167,14 @@ export class Poll implements PollInterface {
       .filter((t) => t != null)
       .map(
         (t, idx) =>
-          `**${idx + 2}º Lugar** – ${t.opt.text} – ${t.stat.numReacts} (${
-            t.stat.percent
-          }%)`,
+          `**${idx + 2}º Lugar** – ${t.opt.text} – ${t.stat.numReacts} (${t.stat.percent}%)`,
       )
 
     const winnerText = `No topo ${isTie ? `estão` : `está`} ${tied.join(', ')}`
 
     return (
       `${winnerText} com **${winner.stat.numReacts} (${winner.stat.percent}%)** votos.` +
-      `\n  Votaram ${isTie ? `na primeira` : ''}: ${winner.opt.users.join(
-        ', ',
-      )}` +
+      `\n  Votaram ${isTie ? `na primeira` : ''}: ${winner.opt.users.join(', ')}` +
       `${isTie ? '' : `\n${runnerText.join('\n')}\n${excludedText}`}`
     )
   }
@@ -232,10 +203,7 @@ export class Poll implements PollInterface {
   private async addUserToOption(user: User, option: PollOption) {
     option.users = [...option.users, user.toString()]
 
-    await Poll.model.updateOne(
-      { message: this.message?.id },
-      { $set: { options: this.options } },
-    )
+    await Poll.model.updateOne({ message: this.message?.id }, { $set: { options: this.options } })
 
     await this.message?.edit({
       embeds: [new EmbedBuilder().setDescription(this.render())],
@@ -245,10 +213,7 @@ export class Poll implements PollInterface {
   private async removeUserFromOption(user: User, option: PollOption) {
     option.users = option.users.filter((u) => u !== user.toString())
 
-    await Poll.model.updateOne(
-      { message: this.message?.id },
-      { $set: { options: this.options } },
-    )
+    await Poll.model.updateOne({ message: this.message?.id }, { $set: { options: this.options } })
 
     await this.message?.edit({
       embeds: [new EmbedBuilder().setDescription(this.render())],
@@ -285,9 +250,7 @@ export class Poll implements PollInterface {
     const range = [...Array(barLength).keys()]
 
     return range
-      .map((progressUnit) =>
-        progressUnit < progress ? filledElement : emptyElement,
-      )
+      .map((progressUnit) => (progressUnit < progress ? filledElement : emptyElement))
       .join('')
   }
 }

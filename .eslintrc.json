@@ -34,7 +34,8 @@
         "singleQuote": true,
         "trailingComma": "all",
         "semi": false,
-        "tabWidth": 2
+        "tabWidth": 2,
+        "printWidth": 100
       }
     ],
     "no-unused-vars": "off",

@@ -15,9 +15,7 @@ export const MoveMessagesRunner: CommandRunnerType = async (interaction) => {
     return
   }
 
-  const messagesStr = interaction.options.getString(
-    AdminCommandNames.MESSAGES_OPT,
-  )
+  const messagesStr = interaction.options.getString(AdminCommandNames.MESSAGES_OPT)
 
   const messageIds = messagesStr?.split(' ')
   if (!messageIds?.length) {
@@ -41,9 +39,7 @@ export const MoveMessagesRunner: CommandRunnerType = async (interaction) => {
       dateStyle: 'full',
       timeStyle: 'long',
     }
-    const msgDate = new Intl.DateTimeFormat('pt-PT', dateOpts).format(
-      message.createdAt,
-    )
+    const msgDate = new Intl.DateTimeFormat('pt-PT', dateOpts).format(message.createdAt)
 
     const header = `_Mensagem movida_ (${message.channel})`
     const movedMessage = `${header}\n${message.member} | ${msgDate}\n\n${message.content}`

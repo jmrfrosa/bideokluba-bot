@@ -9,27 +9,18 @@ type UserWithNameTuple = [User, string]
 export const CancelarCommand: CommandInterface = {
   data: new SlashCommandBuilder()
     .setName('cancelar')
-    .setDescription(
-      'Cancela o primeiro utilizador e cria nova amizade com o segundo',
-    )
+    .setDescription('Cancela o primeiro utilizador e cria nova amizade com o segundo')
     .addUserOption((cancelledUser) =>
-      cancelledUser
-        .setName('inimigo')
-        .setDescription('amizade cancelada com')
-        .setRequired(true),
+      cancelledUser.setName('inimigo').setDescription('amizade cancelada com').setRequired(true),
     )
     .addUserOption((friendUser) =>
-      friendUser
-        .setName('amigo')
-        .setDescription('o teu novo amigo')
-        .setRequired(false),
+      friendUser.setName('amigo').setDescription('o teu novo amigo').setRequired(false),
     ),
   run: async (interaction) => {
     await interaction.deferReply()
 
     const cancelledUser = interaction.options.getUser('inimigo')
-    const friendUser =
-      interaction.options.getUser('amigo') || interaction.client.user
+    const friendUser = interaction.options.getUser('amigo') || interaction.client.user
 
     const guild = interaction.guild
     if (!guild || !cancelledUser || !friendUser) {
@@ -43,10 +34,7 @@ export const CancelarCommand: CommandInterface = {
     const cancelledName = (await guild.members.fetch(cancelledUser)).displayName
     const friendName = (await guild.members.fetch(friendUser)).displayName
 
-    const canvas = await renderImage(
-      [cancelledUser, cancelledName],
-      [friendUser, friendName],
-    )
+    const canvas = await renderImage([cancelledUser, cancelledName], [friendUser, friendName])
 
     const attachment = new AttachmentBuilder(canvas.toBuffer())
 
@@ -57,10 +45,7 @@ export const CancelarCommand: CommandInterface = {
   },
 }
 
-async function renderImage(
-  enemy: UserWithNameTuple,
-  friend: UserWithNameTuple,
-) {
+async function renderImage(enemy: UserWithNameTuple, friend: UserWithNameTuple) {
   const [enemyUser, enemyName] = enemy
   const [friendUser, friendName] = friend
 
@@ -68,15 +53,9 @@ async function renderImage(
   const canvas = Canvas.createCanvas(500, 372)
   const ctx = canvas.getContext('2d')
 
-  const background = await Canvas.loadImage(
-    './assets/friendship_ended_template.png',
-  )
-  const enemyAvatar = await Canvas.loadImage(
-    enemyUser.displayAvatarURL({ extension: 'jpg' }),
-  )
-  const friendAvatar = await Canvas.loadImage(
-    friendUser.displayAvatarURL({ extension: 'jpg' }),
-  )
+  const background = await Canvas.loadImage('./assets/friendship_ended_template.png')
+  const enemyAvatar = await Canvas.loadImage(enemyUser.displayAvatarURL({ extension: 'jpg' }))
+  const friendAvatar = await Canvas.loadImage(friendUser.displayAvatarURL({ extension: 'jpg' }))
   const enemyCross = await Canvas.loadImage('./assets/enemy_cross.png')
   const friendCheck = await Canvas.loadImage('./assets/friend_check.png')
 

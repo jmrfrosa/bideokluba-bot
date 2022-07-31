@@ -14,7 +14,6 @@ client.once('ready', async () => {
 
   logger.info('Connected to Discord!')
 
-  logger.info('Deploying commands...')
   await CommandDeployer.deploy()
   await PollLoader.load()
   await EventLoader.load()

@@ -10,9 +10,7 @@ export const ViewBirthdaysRunner: CommandRunnerType = async (interaction) => {
 
   const birthdays = await Birthday.model.find({}).toArray()
 
-  const embed = new EmbedBuilder().setDescription(
-    await renderBirthdays(birthdays),
-  )
+  const embed = new EmbedBuilder().setDescription(await renderBirthdays(birthdays))
 
   interaction.editReply({ embeds: [embed] })
 }

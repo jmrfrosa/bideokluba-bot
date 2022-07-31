@@ -16,19 +16,13 @@ export const AniversáriosCommand: CommandInterface = {
     .setName('aniversários')
     .setDescription('Gerir e verificar a lista de aniversários')
     .addSubcommand((subcmdLigar) =>
-      subcmdLigar
-        .setName('ligar')
-        .setDescription('Activar os lembretes de aniversário'),
+      subcmdLigar.setName('ligar').setDescription('Activar os lembretes de aniversário'),
     )
     .addSubcommand((subcmdDesligar) =>
-      subcmdDesligar
-        .setName('desligar')
-        .setDescription('Desactivar os lembretes de aniversário'),
+      subcmdDesligar.setName('desligar').setDescription('Desactivar os lembretes de aniversário'),
     )
     .addSubcommand((subcmdListar) =>
-      subcmdListar
-        .setName('listar')
-        .setDescription('Ver todos os aniversários registados'),
+      subcmdListar.setName('listar').setDescription('Ver todos os aniversários registados'),
     ),
   run: async (interaction) => {
     const receivedSubcommand = interaction.options.getSubcommand()
