@@ -3,7 +3,7 @@ import { Collection, MessageReaction, User } from 'discord.js'
 import { client } from '@util/client'
 import { Event } from '@models/Event'
 import { logger } from '@util/logger'
-import { EventDocumentType } from '../typings/event.type'
+import { EventDocumentType } from '@typings/event.type'
 
 export class EventLoader {
   static async add(id: string) {
