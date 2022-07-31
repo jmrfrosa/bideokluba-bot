@@ -8,4 +8,5 @@ export enum EventOptions {
   '❌' = '❌ não vou',
   '🤷‍♂️' = '🤷‍♂️ talvez',
   '🗑' = 'remover',
+  '✏️' = 'editar',
 }

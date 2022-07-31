@@ -1,10 +1,4 @@
-import {
-  ActionRowBuilder,
-  TextChannel,
-  ButtonBuilder,
-  ButtonStyle,
-  GuildMember,
-} from 'discord.js'
+import { ActionRowBuilder, TextChannel, ButtonBuilder, ButtonStyle, GuildMember } from 'discord.js'
 import { Event } from '@models/Event'
 import { CommandRunnerType } from '@typings/command.type'
 import { fetchChannel } from '@util/common'
@@ -15,6 +9,7 @@ export const CreateEventRunner: CommandRunnerType = async (interaction) => {
   const reply = await interaction.deferReply({ fetchReply: true })
   const replyId = reply.id
 
+  const owner = interaction.user
   const author = (interaction.member as GuildMember).displayName
 
   if (!author) {
@@ -41,7 +36,7 @@ export const CreateEventRunner: CommandRunnerType = async (interaction) => {
     return
   }
 
-  const event = new Event({ channel, title, date, author })
+  const event = new Event({ channel, title, date, owner, author })
   const body = event.render()
 
   const row = new ActionRowBuilder<ButtonBuilder>()
@@ -49,7 +44,7 @@ export const CreateEventRunner: CommandRunnerType = async (interaction) => {
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(`${option}-${replyId}`)
-        .setLabel(option)
+        .setEmoji(option)
         .setStyle(ButtonStyle.Secondary),
     )
   })

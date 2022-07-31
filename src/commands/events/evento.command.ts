@@ -16,10 +16,7 @@ export const EventoCommand: CommandInterface = {
         .setName('criar')
         .setDescription('Criar um novo evento, adicionando-o ao calendário')
         .addStringOption((optTitle) =>
-          optTitle
-            .setName('title')
-            .setDescription('Título do evento')
-            .setRequired(true),
+          optTitle.setName('title').setDescription('Título do evento').setRequired(true),
         )
         .addStringOption((optDate) =>
           optDate
