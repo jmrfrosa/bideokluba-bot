@@ -140,7 +140,10 @@ export class Poll implements PollInterface {
       return `${msg} ‣ ${text}${users.length ? ` - ${statsText}${progressBar}${usersText}` : ''}\n`
     }, '')
 
-    return `🍿 **${this.header}**\n\n${table}`
+    return new EmbedBuilder()
+      .setDescription(table)
+      .setTitle(`🍿 **${this.header}**`)
+      .setThumbnail('https://cdn2.iconfinder.com/data/icons/3d-infographics/512/5-1024.png')
   }
 
   report() {
@@ -180,6 +183,8 @@ export class Poll implements PollInterface {
   }
 
   async handleOptionChoice(interaction: ButtonInteraction) {
+    await interaction.deferUpdate()
+
     const option = this.findOption(interaction)
     if (!option) {
       logger.error(
@@ -206,7 +211,7 @@ export class Poll implements PollInterface {
     await Poll.model.updateOne({ message: this.message?.id }, { $set: { options: this.options } })
 
     await this.message?.edit({
-      embeds: [new EmbedBuilder().setDescription(this.render())],
+      embeds: [this.render()],
     })
   }
 
@@ -216,7 +221,7 @@ export class Poll implements PollInterface {
     await Poll.model.updateOne({ message: this.message?.id }, { $set: { options: this.options } })
 
     await this.message?.edit({
-      embeds: [new EmbedBuilder().setDescription(this.render())],
+      embeds: [this.render()],
     })
   }
 
@@ -242,9 +247,9 @@ export class Poll implements PollInterface {
     }
   }
 
-  private progressBarBuilder(percent: number, barLength = 15) {
-    const filledElement = '█'
-    const emptyElement = '▒'
+  private progressBarBuilder(percent: number, barLength = 16) {
+    const filledElement = '■'
+    const emptyElement = '□'
 
     const progress = Math.floor((percent / 100) * barLength)
     const range = [...Array(barLength).keys()]

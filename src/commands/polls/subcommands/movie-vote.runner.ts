@@ -5,7 +5,6 @@ import {
   ChatInputCommandInteraction,
   ChannelType,
   ActionRowBuilder,
-  EmbedBuilder,
 } from 'discord.js'
 import { Poll } from '@models/Poll'
 import { CommandRunnerType } from '../../../typings/command.type'
@@ -33,8 +32,7 @@ export const MovieVoteRunner: CommandRunnerType = async (interaction) => {
   const rows = buildRows(options, replyId)
 
   const poll = new Poll({ options, channel, header: defaultHeader })
-  const body = poll.render()
-  const embed = new EmbedBuilder().setDescription(body)
+  const embed = poll.render()
   const sentMsg = await interaction.editReply({
     components: rows,
     embeds: [embed],

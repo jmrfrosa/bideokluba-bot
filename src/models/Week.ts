@@ -99,7 +99,7 @@ export class Week implements WeekInterface {
       return
     }
 
-    const week = Week.model.insertOne(serializedWeek)
+    const week = await Week.model.insertOne(serializedWeek)
     client.calendarWeeks?.set(message.id, this)
 
     logger.info('Week was saved into database: %o', week)
