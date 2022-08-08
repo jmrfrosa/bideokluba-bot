@@ -6,19 +6,15 @@
   "author": "João Rosa",
   "license": "MIT",
   "dependencies": {
-    "@discordjs/rest": "^1.0.0",
     "canvas": "^2.9.1",
-    "dayjs": "^1.10.4",
-    "discord-api-types": "^0.36.3",
-    "discord.js": "^14.0.3",
+    "dayjs": "^1.11.4",
+    "discord.js": "^14.1.2",
     "dotenv": "^16.0.0",
+    "imdb-api": "^4.4.1",
     "mongodb": "^4.8.1",
-    "nedb-promises": "^4.1.1",
     "node-cron": "^3.0.0",
-    "omdb-api-pt": "^2.0.1",
     "pino": "^7.0.0-rc.9",
-    "pino-pretty": "^7.6.1",
-    "rss-parser": "^3.12.0"
+    "pino-pretty": "^7.6.1"
   },
   "scripts": {
     "start:js": "tsc && node -r dotenv/config -r tsconfig-paths/require ./dist/index.js",
