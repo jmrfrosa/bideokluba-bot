@@ -1,13 +1,13 @@
 import { WithId } from 'mongodb'
 import { Collection, Message, EmbedBuilder } from 'discord.js'
-import { client } from '@util/client'
 import { fetchChannel, fetchMessage } from '@util/common'
-import { toDate } from '@util/datetime'
+import { toDateTime } from '@util/datetime'
 import { WeekDocumentType, WeekInterface } from '@typings/week.type'
 import { Dayjs } from 'dayjs'
 import { logger } from '@util/logger'
 import { Event } from './Event'
-import { dbInstance } from '../service/DbService'
+import { dbInstance } from '@service/DbService'
+import { entityCache } from '@service/CacheService'
 
 export class Week implements WeekInterface {
   static readonly collectionName = 'weeks'
@@ -51,22 +51,22 @@ export class Week implements WeekInterface {
 
     if (!Object.keys(query).length) return
 
-    const week = await this.model.findOne({
+    const dbWeek = await this.model.findOne({
       ...query,
     })
 
-    if (!week) {
+    if (!dbWeek) {
       logger.error('Something went wrong. Week for query %o was not found.', query)
       return
     }
 
-    return Week.hydrate(week)
+    return Week.hydrate(dbWeek)
   }
 
-  static async hydrate(dbObj: WithId<WeekDocumentType>) {
-    const channel = await fetchChannel({ id: dbObj.channel, fromCache: false })
+  static async hydrate(dbWeek: WithId<WeekDocumentType>) {
+    const channel = await fetchChannel({ id: dbWeek.channel, fromCache: false })
     const message = await fetchMessage({
-      id: dbObj.message,
+      id: dbWeek.message,
       channel,
       fromCache: false,
     })
@@ -76,15 +76,17 @@ export class Week implements WeekInterface {
       return
     }
 
-    const { weekStart, weekEnd, events } = Week.deserialize(dbObj)
+    const { weekStart, weekEnd, events } = await Week.deserialize(dbWeek)
 
     const week = new Week({
       message,
       channel,
       weekStart,
       weekEnd,
-      events,
+      events: new Collection(),
     })
+
+    await week.hydrateEvents(events)
 
     return week
   }
@@ -100,7 +102,7 @@ export class Week implements WeekInterface {
     }
 
     const week = await Week.model.insertOne(serializedWeek)
-    client.calendarWeeks?.set(message.id, this)
+    entityCache.weeks.set(message.id, this)
 
     logger.info('Week was saved into database: %o', week)
 
@@ -162,26 +164,38 @@ export class Week implements WeekInterface {
     return {
       message: this.message.id,
       channel: this.channel.id,
-      weekStart: this.weekStart.format('DD/MM/YYYY'),
-      weekEnd: this.weekEnd.format('DD/MM/YYYY'),
+      weekStart: this.weekStart.toDate(),
+      weekEnd: this.weekEnd.toDate(),
       events: [...this.events.keys()],
     }
   }
 
-  static deserialize(data: WeekDocumentType) {
-    const eligibleEvents =
-      client.events?.filter((e) => {
-        if (!e.message) return false
+  async hydrateEvents(eventIds: string[]) {
+    const events: [string, Event][] = []
+    for (const messageId of eventIds) {
+      const cachedEvent = entityCache.events.get(messageId)
+      if (cachedEvent) {
+        events.push([messageId, cachedEvent])
+        continue
+      }
 
-        return data.events.includes(e.message.id)
-      }) || new Collection()
+      const dbEvent = await Event.model.findOne({ message: messageId })
+      if (!dbEvent) continue
 
-    const events = new Collection(Array.from(eligibleEvents))
+      const event = await Event.hydrate(dbEvent, this)
+      if (!event) continue
 
+      events.push([messageId, event])
+    }
+
+    this.events = new Collection<string, Event>(events)
+  }
+
+  static async deserialize(data: WeekDocumentType) {
     return {
-      weekStart: toDate(data.weekStart),
-      weekEnd: toDate(data.weekEnd),
-      events,
+      weekStart: toDateTime(data.weekStart),
+      weekEnd: toDateTime(data.weekEnd),
+      events: data.events,
     }
   }
 }

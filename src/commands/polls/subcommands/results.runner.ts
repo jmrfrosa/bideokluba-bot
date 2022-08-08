@@ -1,8 +1,9 @@
 import { ButtonStyle, ActionRowBuilder, ButtonBuilder } from 'discord.js'
 import { CommandRunnerType } from '@typings/command.type'
-import { client } from '@util/client'
 import { parseMessageId } from '@util/common'
 import { VoteCommandNames } from '../votação.command'
+import { entityCache } from '@service/CacheService'
+import { CacheNames } from '@typings/enums'
 
 export const ResultsRunner: CommandRunnerType = async (interaction) => {
   const reply = await interaction.deferReply({ fetchReply: true })
@@ -11,7 +12,7 @@ export const ResultsRunner: CommandRunnerType = async (interaction) => {
   const idOrUrl = interaction.options.getString(VoteCommandNames.VOTE_ID_OPT, true)
 
   const pollId = parseMessageId(idOrUrl)
-  const poll = client.polls?.get(pollId)
+  const poll = await entityCache.find(pollId, CacheNames.Polls)
 
   if (!poll) {
     await interaction.editReply('Esta votação não existe ou não se encontra activa!')

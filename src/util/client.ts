@@ -6,6 +6,7 @@ import { REST } from '@discordjs/rest'
 import { Poll } from '@models/Poll'
 import { Week } from '@models/Week'
 import { Event } from '@models/Event'
+import { Movie } from '@models/Movie'
 
 const { token, applicationId, guildId } = config
 
@@ -13,6 +14,7 @@ type ClientType = Client & {
   polls?: Collection<string, Poll>
   events?: Collection<string, Event>
   calendarWeeks?: Collection<string, Week>
+  movies?: Collection<string, Movie>
   birthdayScheduler?: nodeCron.ScheduledTask
 }
 

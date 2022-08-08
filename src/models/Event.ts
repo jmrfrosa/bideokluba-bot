@@ -19,13 +19,15 @@ import {
   EventListValues,
   EventOptionKeys,
 } from '@typings/event.type'
-import { client } from '@util/client'
 import { fetchMessage, fetchChannel, fetchUser } from '@util/common'
 import { toDate } from '@util/datetime'
 import { gCalUrl } from '@util/events'
 import { logger } from '@util/logger'
 import { Week } from './Week'
 import { dbInstance } from '../service/DbService'
+import { entityCache } from '../service/CacheService'
+import { WeekDocumentType } from '../typings/week.type'
+import { CacheNames } from '../typings/enums'
 
 export class Event implements EventInterface {
   static readonly collectionName = 'events'
@@ -93,7 +95,7 @@ export class Event implements EventInterface {
     return Event.hydrate(event)
   }
 
-  static async hydrate(dbObj: WithId<EventDocumentType>) {
+  static async hydrate(dbObj: WithId<EventDocumentType>, parentWeek?: Week) {
     const channel = await fetchChannel({ id: dbObj.channel, fromCache: false })
 
     if (!channel) {
@@ -107,7 +109,22 @@ export class Event implements EventInterface {
       fromCache: false,
     })
 
-    const { title, date, owner, author, attendance, week, active } = await Event.deserialize(dbObj)
+    const {
+      title,
+      date,
+      owner,
+      author,
+      attendance,
+      week: weekId,
+      active,
+    } = await Event.deserialize(dbObj)
+
+    const week = parentWeek ? parentWeek : await entityCache.find(weekId, CacheNames.Weeks)
+
+    if (!week) {
+      logger.error('Could not find week %o for event %o', weekId, dbObj.message)
+      return
+    }
 
     return new Event({
       message,
@@ -117,8 +134,8 @@ export class Event implements EventInterface {
       owner,
       author,
       attendance,
-      week,
       active,
+      week,
     })
   }
 
@@ -134,7 +151,7 @@ export class Event implements EventInterface {
     }
 
     const event = await Event.model.insertOne(serializedEvent)
-    client.events?.set(message.id, this)
+    entityCache.events.set(message.id, this)
 
     logger.info('Event was saved into database: %o', event)
 
@@ -142,8 +159,14 @@ export class Event implements EventInterface {
   }
 
   async addToWeek() {
+    const eventDate = this.date.toDate()
+    const eligibleWeek = await Week.model.findOne<WithId<WeekDocumentType>>({
+      weekStart: { $lte: eventDate },
+      weekEnd: { $gte: eventDate },
+    })
+
     const week =
-      client.calendarWeeks?.find((w) => this.date.isBetween(w.weekStart, w.weekEnd, null, '[]')) ||
+      (await entityCache.find(eligibleWeek?.message, CacheNames.Weeks)) ||
       (await Week.create({ date: this.date }))
 
     if (!week) {
@@ -151,7 +174,7 @@ export class Event implements EventInterface {
       return
     }
 
-    this.week = week as Week
+    this.week = week
     await week.addEvent(this)
 
     // Re-render message to update Week link
@@ -164,7 +187,7 @@ export class Event implements EventInterface {
 
     if (!id) return
 
-    client.events?.delete(id)
+    entityCache.events.delete(id)
 
     return await Event.model.updateOne({ message: id }, { $set: { active: false } })
   }
@@ -175,7 +198,7 @@ export class Event implements EventInterface {
 
     if (!id) return
 
-    client.events?.set(id, this)
+    entityCache.events.set(id, this)
 
     return await Event.model.updateOne({ message: id }, { $set: { active: true } })
   }
@@ -198,7 +221,7 @@ export class Event implements EventInterface {
   async remove() {
     if (!this.message || typeof this.week === 'string') return
 
-    client.events?.delete(this.message.id)
+    entityCache.events?.delete(this.message.id)
 
     this.week?.removeEvent(this)
 

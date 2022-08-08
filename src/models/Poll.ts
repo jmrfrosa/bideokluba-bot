@@ -1,25 +1,63 @@
 import { WithId } from 'mongodb'
 import { ButtonInteraction, EmbedBuilder, Message, User } from 'discord.js'
-import { client } from '@util/client'
 import { fetchChannel, fetchMessage, setDifference } from '@util/common'
 import { logger } from '@util/logger'
 import { PollDocumentType, PollInterface, PollOption } from '@typings/poll.type'
 import { dbInstance } from '../service/DbService'
+import { Movie } from './Movie'
+import { entityCache } from '../service/CacheService'
+import { CacheNames } from '../typings/enums'
+import { buildPollButtonRows, parsePollDates } from '@helpers/poll.helper'
 
 export class Poll implements PollInterface {
   static readonly collectionName = 'polls'
   static readonly model = dbInstance.db.collection<PollDocumentType>(this.collectionName)
+  static readonly channelName = 'geral'
 
   public options
   public channel
   public message
   public header
+  public movie?: Movie
 
-  constructor({ options, channel, message, header = '' }: PollInterface) {
+  constructor({ options, channel, message, movie, header = '' }: PollInterface) {
     this.options = options
     this.channel = channel
     this.message = message
     this.header = header
+    this.movie = movie
+  }
+
+  static async buildMoviePoll(
+    movie: Movie,
+    startDateString?: string | null,
+    endDateString?: string | null,
+  ) {
+    const channel = await fetchChannel({ name: this.channelName })
+
+    if (!channel) {
+      logger.error(
+        `Poll#buildMoviePoll: #${this.channelName} channel was not found in guild. Interrupting interaction.`,
+      )
+      return
+    }
+
+    const { startDate, endDate } = parsePollDates(startDateString, endDateString)
+
+    const header = `Discussão do ${movie.title}`
+    const message = await channel.send({ content: header })
+
+    const { options, rows } = buildPollButtonRows(startDate, endDate, message.id)
+
+    const poll = new Poll({ options, channel, header, movie })
+    const embed = poll.render()
+    await message.edit({
+      content: null,
+      components: rows,
+      embeds: [embed],
+    })
+
+    poll.save(message)
   }
 
   static async fetch(searchParams: Partial<WithId<PollDocumentType>>) {
@@ -37,33 +75,7 @@ export class Poll implements PollInterface {
     }
 
     try {
-      const channel = await fetchChannel({
-        id: dbPoll.channel,
-        fromCache: false,
-      })
-
-      if (!channel) {
-        logger.warn(`Channel ${dbPoll.channel} was not found while fetching poll ${dbPoll._id}!`)
-        return
-      }
-
-      const message = await fetchMessage({
-        id: dbPoll.message,
-        channel,
-        fromCache: false,
-      })
-
-      if (!message) {
-        logger.warn(`Message ${dbPoll.message} was not found in channel ${channel.id}!`)
-        return
-      }
-
-      return new Poll({
-        message,
-        channel,
-        options: dbPoll.options,
-        header: dbPoll.header,
-      })
+      return await this.hydrate(dbPoll)
     } catch (error) {
       logger.error(error)
     }
@@ -78,9 +90,14 @@ export class Poll implements PollInterface {
       options: this.options,
       header: this.header,
       active: true,
+      movie: this.movie?.message?.id,
     })
 
-    client.polls?.set(message.id, this)
+    entityCache.polls.set(message.id, this)
+
+    if (this.movie instanceof Movie) {
+      this.movie.addPoll(this)
+    }
 
     logger.info('Poll was saved into database: %o', poll)
 
@@ -95,32 +112,41 @@ export class Poll implements PollInterface {
       return
     }
 
-    client.polls?.delete(messageId)
+    entityCache.polls.delete(messageId)
     await Poll.model.updateOne({ message: messageId }, { $set: { active: false } })
 
     logger.info(`Poll ${messageId} was deactivated.`)
   }
 
-  async hydrate() {
-    const channelId = this.channel as unknown as string
-    const messageId = this.message as unknown as string
+  static async hydrate(dbPoll: WithId<PollDocumentType>, parentMovie?: Movie) {
+    const channelId = dbPoll.channel
+    const messageId = dbPoll.message
+    const movieId = dbPoll.movie
 
     const channel = await fetchChannel({ id: channelId, fromCache: false })
     const message = await fetchMessage({
       id: messageId,
-      channel: this.channel,
+      channel,
       fromCache: false,
     })
+    const movie = parentMovie
+      ? parentMovie
+      : movieId
+      ? await entityCache.find(movieId, CacheNames.Movies)
+      : undefined
 
     if (!channel || !message) {
       logger.error(`Failed to hydrate poll %o`, this)
       return
     }
 
-    this.channel = channel
-    this.message = message
-
-    return this
+    return new Poll({
+      message,
+      channel,
+      movie,
+      options: dbPoll.options,
+      header: dbPoll.header,
+    })
   }
 
   render() {
@@ -140,9 +166,14 @@ export class Poll implements PollInterface {
       return `${msg} ‣ ${text}${users.length ? ` - ${statsText}${progressBar}${usersText}` : ''}\n`
     }, '')
 
+    const authorContent = this.movie
+      ? { name: '⤴️ Ver filme', iconURL: this.movie.poster, url: this.movie.message.url }
+      : null
+
     return new EmbedBuilder()
       .setDescription(table)
-      .setTitle(`🍿 **${this.header}**`)
+      .setAuthor(authorContent)
+      .setTitle(`**${this.header}**`)
       .setThumbnail('https://cdn2.iconfinder.com/data/icons/3d-infographics/512/5-1024.png')
   }
 
@@ -247,7 +278,7 @@ export class Poll implements PollInterface {
     }
   }
 
-  private progressBarBuilder(percent: number, barLength = 16) {
+  private progressBarBuilder(percent: number, barLength = 12) {
     const filledElement = '■'
     const emptyElement = '□'
 

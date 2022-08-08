@@ -5,8 +5,8 @@ import { Event } from '@models/Event'
 export type WeekDocumentType = {
   message: string
   channel: string
-  weekStart: string
-  weekEnd: string
+  weekStart: Date
+  weekEnd: Date
   events: string[]
 }
 

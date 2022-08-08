@@ -10,3 +10,10 @@ export enum EventOptions {
   '🗑' = 'remover',
   '✏️' = 'editar',
 }
+
+export enum CacheNames {
+  Polls = 'polls',
+  Movies = 'movies',
+  Events = 'events',
+  Weeks = 'weeks',
+}

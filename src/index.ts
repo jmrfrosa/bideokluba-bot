@@ -1,13 +1,12 @@
 import { config } from './config'
 import { client } from '@util/client'
 import { logger } from '@util/logger'
-import { PollLoader } from '@root/src/service/loaders/PollLoader'
-import { EventLoader } from '@root/src/service/loaders/EventLoader'
+import { PollLoader } from '@service/loaders/PollLoader'
+import { EventLoader } from '@service/loaders/EventLoader'
 import { InteractionHandler } from '@service/InteractionHandler'
-import { WeekLoader } from '@root/src/service/loaders/WeekLoader'
 import { BirthdayHandler } from '@service/BirthdayHandler'
 import { CommandDeployer } from '@service/CommandDeployer'
-import { dbInstance } from './service/DbService'
+import { dbInstance } from '@service/DbService'
 
 client.once('ready', async () => {
   await dbInstance.connect()
@@ -15,9 +14,6 @@ client.once('ready', async () => {
   logger.info('Connected to Discord!')
 
   await CommandDeployer.deploy()
-  await PollLoader.load()
-  await EventLoader.load()
-  await WeekLoader.load()
   BirthdayHandler.start()
 })
 
@@ -49,12 +45,20 @@ process.on('SIGTERM', (signal) => {
   logger.info(`Process ${process.pid} received exit signal ${signal}`)
 
   client.destroy()
+
+  process.exit()
 })
 
 process.on('SIGINT', (signal) => {
   logger.info(`Process ${process.pid} received exit signal ${signal}`)
 
   client.destroy()
+
+  process.kill(process.pid, 'SIGTERM')
+})
+
+process.on('exit', () => {
+  console.log('Shutting down bot. Goodbye!')
 })
 
 client.login(config.token)

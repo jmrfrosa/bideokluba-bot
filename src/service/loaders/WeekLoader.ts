@@ -1,9 +1,8 @@
 import { ObjectId } from 'mongodb'
-import { Collection } from 'discord.js'
-import { client } from '@util/client'
 import { Week } from '@models/Week'
 import { now, toDate } from '@util/datetime'
 import { logger } from '@util/logger'
+import { entityCache } from '../CacheService'
 
 export class WeekLoader {
   static async add(id: string) {
@@ -16,14 +15,12 @@ export class WeekLoader {
       return
     }
 
-    client.calendarWeeks?.set(week.message.id, week)
+    entityCache.weeks.set(week.message.id, week)
 
-    logger.info(`Calendar week ${id} fetched.`)
+    logger.info(`Calendar week ${id} cached.`)
   }
 
   static async load() {
-    client.calendarWeeks = new Collection()
-
     logger.info('Fetching calendar...')
 
     const dbWeeks = await Week.model.find({}).toArray()
@@ -40,19 +37,19 @@ export class WeekLoader {
   }
 
   static async unload(id: string, checkDb = false) {
-    const inClient = client.calendarWeeks?.has(id)
+    const inClient = entityCache.weeks.has(id)
     const inDb = checkDb ? await Week.model.findOne({ _id: new ObjectId(id) }) : false
 
     if (inClient || inDb) {
       logger.info(`Week ${id} has been deleted. Removing from records.`)
 
-      client.calendarWeeks?.delete(id)
+      entityCache.weeks.delete(id)
       await Week.model.deleteOne({ _id: new ObjectId(id) }, {})
     }
   }
 
   static syncEvents() {
-    client.calendarWeeks?.forEach((week) => {
+    entityCache.weeks.forEach((week) => {
       week.events.forEach((event) => {
         event.week = week
       })

@@ -5,9 +5,12 @@ import {
   InteractionType,
   ModalSubmitInteraction,
 } from 'discord.js'
-import { client } from '@util/client'
 import { commandList } from '@commands/commands'
 import { logger } from '@util/logger'
+import { Movie } from '@models/Movie'
+import { Poll } from '@models/Poll'
+import { Event } from '@models/Event'
+import { entityCache } from './CacheService'
 
 export class InteractionHandler {
   static async handle(interaction: Interaction) {
@@ -44,17 +47,19 @@ export class InteractionHandler {
   static async handleButton(buttonInteraction: ButtonInteraction) {
     const messageId = buttonInteraction.message.id
 
-    logger.trace('Handling button for message: %o', messageId)
+    logger.info('Handling button for message: %o', messageId)
 
-    const event = client.events?.get(messageId)
-    const poll = client.polls?.get(messageId)
+    const entity = await entityCache.find(messageId)
 
-    if (event) {
-      logger.trace('Found event for interaction %o!', buttonInteraction.customId)
-      await event.handleOptionChoice(buttonInteraction)
-    } else if (poll) {
-      logger.trace('Found poll for interaction %o!', buttonInteraction.customId)
-      await poll.handleOptionChoice(buttonInteraction)
+    if (entity instanceof Event) {
+      logger.info('Found event for interaction %o!', buttonInteraction.customId)
+      await entity.handleOptionChoice(buttonInteraction)
+    } else if (entity instanceof Poll) {
+      logger.info('Found poll for interaction %o!', buttonInteraction.customId)
+      await entity.handleOptionChoice(buttonInteraction)
+    } else if (entity instanceof Movie) {
+      logger.info('Found movie for interaction %o!', buttonInteraction.customId)
+      await entity.handleOptionChoice(buttonInteraction)
     } else {
       await buttonInteraction.reply({
         content: 'O post com que tentaste interagir já não está disponível.',
@@ -70,10 +75,12 @@ export class InteractionHandler {
 
     const messageId = modalInteraction.message.id
 
-    const event = client.events?.get(messageId || '')
+    const entity = await entityCache.find(messageId)
 
-    if (event) {
-      event.handleModalSubmission(modalInteraction)
+    if (entity instanceof Event) {
+      await entity.handleModalSubmission(modalInteraction)
+    } else if (entity instanceof Movie) {
+      await entity.handleModalSubmission(modalInteraction)
     }
   }
 }

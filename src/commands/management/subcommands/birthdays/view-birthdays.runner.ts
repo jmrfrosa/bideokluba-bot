@@ -1,7 +1,7 @@
 import { EmbedBuilder } from '@discordjs/builders'
-import { Birthday } from '@root/src/models/Birthday'
-import { fetchUser } from '@root/src/util/common'
-import { toDate } from '@root/src/util/datetime'
+import { Birthday } from '@models/Birthday'
+import { fetchUser } from '@util/common'
+import { toDate } from '@util/datetime'
 import { BirthdayDocumentType } from '@typings/birthday.type'
 import { CommandRunnerType } from '@typings/command.type'
 
