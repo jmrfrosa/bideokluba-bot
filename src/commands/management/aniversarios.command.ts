@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
+import { PermissionFlagsBits } from 'discord.js'
 import { InvalidCommandRunner } from '../invalid-command.runner'
 import { BirthdaysOffRunner } from './subcommands/birthdays/birthdays-off.runner'
 import { BirthdaysOnRunner } from './subcommands/birthdays/birthdays-on.runner'
@@ -15,6 +16,7 @@ export const AniversáriosCommand: CommandInterface = {
   data: new SlashCommandBuilder()
     .setName('aniversários')
     .setDescription('Gerir e verificar a lista de aniversários')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
     .addSubcommand((subcmdLigar) =>
       subcmdLigar.setName('ligar').setDescription('Activar os lembretes de aniversário'),
     )

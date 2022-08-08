@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { ChannelType } from 'discord.js'
+import { ChannelType, PermissionFlagsBits } from 'discord.js'
 import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { RunnerHandler } from '../subcommand.handler'
 import { MoveMessagesRunner } from './subcommands/admin/move-messages.runner'
@@ -23,6 +23,7 @@ export const AdminCommand: CommandInterface = {
   data: new SlashCommandBuilder()
     .setName(AdminCommandNames.ADMIN_CMD)
     .setDescription('Comandos apenas para administradores')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
     .addSubcommand((subcmdMover) =>
       subcmdMover
         .setName(AdminCommandNames.MOVE_SCMD)
@@ -49,7 +50,7 @@ export const AdminCommand: CommandInterface = {
           optEntity
             .setName(AdminCommandNames.ENTITY_OPT)
             .setDescription('ID da mensagem da entidade')
-            .setRequired(false),
+            .setRequired(true),
         ),
     ),
   run: async (interaction) => {
