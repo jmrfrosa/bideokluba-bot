@@ -23,9 +23,8 @@
     "rootDir": "./src",
     "baseUrl": "./",
     "paths": {
-      "@root/*": ["./*"],
-      "@src/*": ["./src/*"],
       "@commands/*": ["./src/commands/*"],
+      "@helpers/*": ["./src/helpers/*"],
       "@service/*": ["./src/service/*"],
       "@models/*": ["./src/models/*"],
       "@util/*": ["./src/util/*"],
