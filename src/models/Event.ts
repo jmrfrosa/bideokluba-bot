@@ -367,11 +367,6 @@ export class Event implements EventInterface {
     const newTitle = interaction.fields.getTextInputValue(`titleInput-${customId}`)
     const newDate = interaction.fields.getTextInputValue(`dateInput-${customId}`)
 
-    logger.info('Handling modal submission interaction, fields: %o', {
-      newTitle,
-      newDate,
-    })
-
     this.title = newTitle
     this.date = toDate(newDate)
     await (this.week as Week).removeEvent(this)

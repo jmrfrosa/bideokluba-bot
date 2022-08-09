@@ -80,11 +80,6 @@ export class Movie implements MovieInterface {
 
   static async latestMovie() {
     const dbMovie = await this.model.findOne({}, { sort: { _id: -1 } })
-    logger.info('Fetching latest movie, found: %o', dbMovie)
-
-    const earliestMovie = await this.model.findOne({}, { sort: { _id: 1 } })
-    logger.info('Fetching earliest movie, found: %o', earliestMovie)
-
     if (!dbMovie) return
 
     return entityCache.find(dbMovie.message, CacheNames.Movies)

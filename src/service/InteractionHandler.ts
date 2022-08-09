@@ -47,18 +47,18 @@ export class InteractionHandler {
   static async handleButton(buttonInteraction: ButtonInteraction) {
     const messageId = buttonInteraction.message.id
 
-    logger.info('Handling button for message: %o', messageId)
+    logger.trace('Handling button for message: %o', messageId)
 
     const entity = await entityCache.find(messageId)
 
     if (entity instanceof Event) {
-      logger.info('Found event for interaction %o!', buttonInteraction.customId)
+      logger.trace('Found event for interaction %o!', buttonInteraction.customId)
       await entity.handleOptionChoice(buttonInteraction)
     } else if (entity instanceof Poll) {
-      logger.info('Found poll for interaction %o!', buttonInteraction.customId)
+      logger.trace('Found poll for interaction %o!', buttonInteraction.customId)
       await entity.handleOptionChoice(buttonInteraction)
     } else if (entity instanceof Movie) {
-      logger.info('Found movie for interaction %o!', buttonInteraction.customId)
+      logger.trace('Found movie for interaction %o!', buttonInteraction.customId)
       await entity.handleOptionChoice(buttonInteraction)
     } else {
       await buttonInteraction.reply({
