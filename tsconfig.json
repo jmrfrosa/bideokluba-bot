@@ -1,0 +1,36 @@
+{
+  "extends": "ts-node/node16/tsconfig.json",
+  "ts-node": {
+    "files": true,
+    "require": ["tsconfig-paths/register"]
+  },
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "CommonJS",
+    "allowJs": true,
+    "checkJs": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "@commands/*": ["./src/commands/*"],
+      "@helpers/*": ["./src/helpers/*"],
+      "@service/*": ["./src/service/*"],
+      "@models/*": ["./src/models/*"],
+      "@util/*": ["./src/util/*"],
+      "@typings/*": ["./src/typings/*"]
+    }
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
