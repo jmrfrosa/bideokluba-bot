@@ -4,6 +4,7 @@ import { CommandInterface, CommandRunnerListType } from '@typings/command.type'
 import { RunnerHandler } from '../subcommand.handler'
 import { MoveMessagesRunner } from './subcommands/admin/move-messages.runner'
 import { RenderRunner } from './subcommands/admin/render.runner'
+import { AnnouncementRunner } from './subcommands/admin/announcement.runner'
 
 export enum AdminCommandNames {
   ADMIN_CMD = 'admin',
@@ -12,11 +13,13 @@ export enum AdminCommandNames {
   MESSAGES_OPT = 'mensagens',
   RENDER_SCMD = 'render',
   ENTITY_OPT = 'entidade',
+  ANNOUNCEMENT_SCMD = 'anúncio',
 }
 
 const subcommandRunners: CommandRunnerListType = {
-  mover: MoveMessagesRunner,
-  render: RenderRunner,
+  [AdminCommandNames.MOVE_SCMD]: MoveMessagesRunner,
+  [AdminCommandNames.RENDER_SCMD]: RenderRunner,
+  [AdminCommandNames.ANNOUNCEMENT_SCMD]: AnnouncementRunner,
 }
 
 export const AdminCommand: CommandInterface = {
@@ -52,6 +55,11 @@ export const AdminCommand: CommandInterface = {
             .setDescription('ID da mensagem da entidade')
             .setRequired(true),
         ),
+    )
+    .addSubcommand((subcmdAnnouncement) =>
+      subcmdAnnouncement
+        .setName(AdminCommandNames.ANNOUNCEMENT_SCMD)
+        .setDescription('Lançar anúncios de lançamento'),
     ),
   run: async (interaction) => {
     const receivedSubcommand = interaction.options.getSubcommand()
