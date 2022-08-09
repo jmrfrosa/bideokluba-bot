@@ -9,6 +9,6 @@ services:
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
     volumes:
-      - db:/db
+      - db:/data/db
 volumes:
   db:
