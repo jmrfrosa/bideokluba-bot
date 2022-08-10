@@ -1,5 +1,12 @@
 import { WithId } from 'mongodb'
-import { ButtonInteraction, EmbedBuilder, Message, User } from 'discord.js'
+import {
+  APIEmbedField,
+  ButtonInteraction,
+  EmbedBuilder,
+  inlineCode,
+  Message,
+  User,
+} from 'discord.js'
 import { fetchChannel, fetchMessage, setDifference } from '@util/common'
 import { logger } from '@util/logger'
 import { PollDocumentType, PollInterface, PollOption } from '@typings/poll.type'
@@ -150,7 +157,7 @@ export class Poll implements PollInterface {
   }
 
   render() {
-    const table = this.options.reduce((msg, option) => {
+    const table = this.options.map((option) => {
       const { text, users } = option
 
       const userList = users.reduce(
@@ -159,22 +166,25 @@ export class Poll implements PollInterface {
       )
 
       const stats = this.optionStats(option)
-      const statsText = `**${stats.numReacts}**`
-      const progressBar = `\n    ${stats.progressBar} (${stats.percent}%)`
-      const usersText = `\n    ${userList}`
+      const statsText = users.length ? ` - (${stats.percent}%)` : ''
+      const progressBar = inlineCode(stats.progressBar)
+      const usersText = `\n${userList}`
 
-      return `${msg} ‣ ${text}${users.length ? ` - ${statsText}${progressBar}${usersText}` : ''}\n`
-    }, '')
+      const content = `${users.length ? `${progressBar}${usersText}` : '‎'}`
+      const field: APIEmbedField = { name: `${text}${statsText}`, value: content, inline: false }
+
+      return field
+    })
 
     const authorContent = this.movie
       ? { name: '⤴️ Ver filme', iconURL: this.movie.poster, url: this.movie.message.url }
       : null
 
     return new EmbedBuilder()
-      .setDescription(table)
       .setAuthor(authorContent)
       .setTitle(`**${this.header}**`)
       .setThumbnail('https://cdn2.iconfinder.com/data/icons/3d-infographics/512/5-1024.png')
+      .setFields(table)
   }
 
   report() {
@@ -278,7 +288,7 @@ export class Poll implements PollInterface {
     }
   }
 
-  private progressBarBuilder(percent: number, barLength = 12) {
+  private progressBarBuilder(percent: number, barLength = 20) {
     const filledElement = '■'
     const emptyElement = '□'
 
