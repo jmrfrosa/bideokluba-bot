@@ -6,7 +6,7 @@ import { parseMessageId } from '@util/common'
 import { Movie } from '@models/Movie'
 import { entityCache } from '@service/CacheService'
 import { CacheNames } from '@typings/enums'
-import { buildPollButtonRows, parsePollDates } from '@helpers/poll.helper'
+import { buildPollOptionSelect, parsePollDates } from '@helpers/poll.helper'
 
 const defaultHeader = 'Em que dia marcamos discussão?'
 
@@ -31,7 +31,7 @@ export const VoteMovieRunner: CommandRunnerType = async (interaction) => {
   const movie =
     movieIdOrUrl && (await entityCache.find(parseMessageId(movieIdOrUrl), CacheNames.Movies))
 
-  const { options, rows } = buildPollButtonRows(startDate, endDate, replyId)
+  const { options, rows } = buildPollOptionSelect(startDate, endDate, replyId)
 
   const header = movie instanceof Movie ? `Discussão do ${movie.title}` : defaultHeader
 

@@ -1,7 +1,13 @@
 import { PollOption } from '@typings/poll.type'
 import { now, toDate } from '@util/datetime'
 import { Dayjs } from 'dayjs'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import {
+  ActionRowBuilder,
+  APISelectMenuOption,
+  ButtonBuilder,
+  ButtonStyle,
+  SelectMenuBuilder,
+} from 'discord.js'
 
 const buildPollOptions = (startDate: Dayjs, endDate: Dayjs) => {
   const daysBetween = endDate.diff(startDate, 'days')
@@ -56,4 +62,24 @@ export const parsePollDates = (startDateString?: string | null, endDateString?: 
   }
 
   return { startDate, endDate }
+}
+
+export const buildPollOptionSelect = (startDate: Dayjs, endDate: Dayjs, messageId: string) => {
+  const options = buildPollOptions(startDate, endDate)
+
+  const selectOptions: APISelectMenuOption[] = options.map((opt) => ({
+    label: opt.text,
+    value: opt.text,
+  }))
+
+  const component = new SelectMenuBuilder()
+    .setCustomId(`select-${messageId}`)
+    .setMinValues(0)
+    .setMaxValues(selectOptions.length)
+    .addOptions(selectOptions)
+
+  const row = new ActionRowBuilder<SelectMenuBuilder>()
+  row.addComponents(component)
+
+  return { options, rows: [row] }
 }

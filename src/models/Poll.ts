@@ -5,7 +5,7 @@ import {
   EmbedBuilder,
   inlineCode,
   Message,
-  User,
+  SelectMenuInteraction,
 } from 'discord.js'
 import { fetchChannel, fetchMessage, setDifference } from '@util/common'
 import { logger } from '@util/logger'
@@ -14,7 +14,7 @@ import { dbInstance } from '../service/DbService'
 import { Movie } from './Movie'
 import { entityCache } from '../service/CacheService'
 import { CacheNames } from '../typings/enums'
-import { buildPollButtonRows, parsePollDates } from '@helpers/poll.helper'
+import { buildPollOptionSelect, parsePollDates } from '@helpers/poll.helper'
 
 export class Poll implements PollInterface {
   static readonly collectionName = 'polls'
@@ -54,7 +54,7 @@ export class Poll implements PollInterface {
     const header = `Discussão do ${movie.title}`
     const message = await channel.send({ content: header })
 
-    const { options, rows } = buildPollButtonRows(startDate, endDate, message.id)
+    const { options, rows } = buildPollOptionSelect(startDate, endDate, message.id)
 
     const poll = new Poll({ options, channel, header, movie })
     const embed = poll.render()
@@ -223,41 +223,17 @@ export class Poll implements PollInterface {
     )
   }
 
-  async handleOptionChoice(interaction: ButtonInteraction) {
-    await interaction.deferUpdate()
-
-    const option = this.findOption(interaction)
-    if (!option) {
-      logger.error(
-        'Could not find matching option (%o) for interaction: %o',
-        this.options,
-        interaction.customId,
-      )
-      return
-    }
-
+  async handleSelectOption(interaction: SelectMenuInteraction) {
     const user = interaction.user
+    const values = interaction.values
 
-    if (option?.users.includes(user.toString())) {
-      this.removeUserFromOption(user, option)
-      return
+    const pollOptions = this.options.filter((pollOption) => values.includes(pollOption.text))
+
+    for (const option of pollOptions) {
+      option.users.includes(user.toString())
+        ? (option.users = option.users.filter((u) => u !== user.toString()))
+        : (option.users = [...option.users, user.toString()])
     }
-
-    this.addUserToOption(user, option)
-  }
-
-  private async addUserToOption(user: User, option: PollOption) {
-    option.users = [...option.users, user.toString()]
-
-    await Poll.model.updateOne({ message: this.message?.id }, { $set: { options: this.options } })
-
-    await this.message?.edit({
-      embeds: [this.render()],
-    })
-  }
-
-  private async removeUserFromOption(user: User, option: PollOption) {
-    option.users = option.users.filter((u) => u !== user.toString())
 
     await Poll.model.updateOne({ message: this.message?.id }, { $set: { options: this.options } })
 

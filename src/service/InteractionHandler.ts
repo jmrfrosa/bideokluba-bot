@@ -4,6 +4,7 @@ import {
   Interaction,
   InteractionType,
   ModalSubmitInteraction,
+  SelectMenuInteraction,
 } from 'discord.js'
 import { commandList } from '@commands/commands'
 import { logger } from '@util/logger'
@@ -27,6 +28,11 @@ export class InteractionHandler {
     if (interaction.isButton()) {
       logger.trace('Detected button interaction, %o', interaction.customId)
       this.handleButton(interaction)
+    }
+
+    if (interaction.isSelectMenu()) {
+      logger.trace('Detected select interaction, %o', interaction.customId)
+      this.handleSelect(interaction)
     }
   }
 
@@ -56,7 +62,6 @@ export class InteractionHandler {
       await entity.handleOptionChoice(buttonInteraction)
     } else if (entity instanceof Poll) {
       logger.trace('Found poll for interaction %o!', buttonInteraction.customId)
-      await entity.handleOptionChoice(buttonInteraction)
     } else if (entity instanceof Movie) {
       logger.trace('Found movie for interaction %o!', buttonInteraction.customId)
       await entity.handleOptionChoice(buttonInteraction)
@@ -81,6 +86,24 @@ export class InteractionHandler {
       await entity.handleModalSubmission(modalInteraction)
     } else if (entity instanceof Movie) {
       await entity.handleModalSubmission(modalInteraction)
+    }
+  }
+
+  static async handleSelect(selectInteraction: SelectMenuInteraction) {
+    await selectInteraction.deferUpdate()
+
+    const messageId = selectInteraction.message.id
+
+    const entity = await entityCache.find(messageId)
+
+    if (entity instanceof Poll) {
+      logger.trace('Found poll for interaction %o!', selectInteraction.customId)
+      await entity.handleSelectOption(selectInteraction)
+    } else {
+      await selectInteraction.reply({
+        content: 'O post com que tentaste interagir já não está disponível.',
+        ephemeral: true,
+      })
     }
   }
 }
