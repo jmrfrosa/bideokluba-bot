@@ -28,5 +28,5 @@ export interface EventInterface {
   active?: boolean
   message?: Message<boolean> | null
   week?: Week | string | null
-  attendance?: Map<string, Set<string>> | null
+  attendance?: Map<EventListValues, Set<string>> | null
 }

@@ -6,7 +6,7 @@ import {
   APISelectMenuOption,
   ButtonBuilder,
   ButtonStyle,
-  SelectMenuBuilder,
+  StringSelectMenuBuilder,
 } from 'discord.js'
 
 const buildPollOptions = (startDate: Dayjs, endDate: Dayjs) => {
@@ -72,13 +72,13 @@ export const buildPollOptionSelect = (startDate: Dayjs, endDate: Dayjs, messageI
     value: opt.text,
   }))
 
-  const component = new SelectMenuBuilder()
+  const component = new StringSelectMenuBuilder()
     .setCustomId(`select-${messageId}`)
     .setMinValues(0)
     .setMaxValues(selectOptions.length)
     .addOptions(selectOptions)
 
-  const row = new ActionRowBuilder<SelectMenuBuilder>()
+  const row = new ActionRowBuilder<StringSelectMenuBuilder>()
   row.addComponents(component)
 
   return { options, rows: [row] }

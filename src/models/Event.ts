@@ -281,7 +281,8 @@ export class Event implements EventInterface {
   }
 
   static async deserialize(data: EventDocumentType) {
-    const attendance = new Map(Object.entries(data.attendance).map(([k, v]) => [k, new Set(v)]))
+    const rawAttendance = Object.entries(data.attendance) as [EventListValues, string[]][]
+    const attendance = new Map(rawAttendance.map(([k, v]) => [k, new Set(v)]))
 
     return {
       title: data.title,
@@ -411,7 +412,7 @@ export class Event implements EventInterface {
   private serializeAttendance() {
     return Object.fromEntries(
       Array.from(this.attendance.entries(), ([state, attendees]) => [state, [...attendees]]),
-    )
+    ) as Record<EventListValues, string[]>
   }
 
   private formatAttendees(usernames: string[]) {

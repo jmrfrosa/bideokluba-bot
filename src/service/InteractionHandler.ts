@@ -30,7 +30,7 @@ export class InteractionHandler {
       this.handleButton(interaction)
     }
 
-    if (interaction.isSelectMenu()) {
+    if (interaction.isStringSelectMenu()) {
       logger.trace('Detected select interaction, %o', interaction.customId)
       this.handleSelect(interaction)
     }
