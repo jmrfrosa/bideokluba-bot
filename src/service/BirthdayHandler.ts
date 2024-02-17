@@ -1,5 +1,5 @@
 import { schedule } from 'node-cron'
-import { EmbedBuilder } from 'discord.js'
+import { EmbedBuilder, TextChannel } from 'discord.js'
 import { client } from '@util/client'
 import { logger } from '@util/logger'
 import { fetchChannel, fetchUser } from '@util/common'
@@ -27,15 +27,21 @@ export class BirthdayHandler {
 
     logger.info('Valid birthdays were found today: %o', validBirthdays)
 
-    const message = await BirthdayHandler.render(validBirthdays)
     const channel = await fetchChannel({ name: channels.offtopic })
 
-    if (!message || !channel) return
+    if (!channel) {
+      logger.error(`Could not find channel ${channels.offtopic}`)
+      return
+    }
+
+    const message = await BirthdayHandler.render(validBirthdays, channel)
+
+    if (!message) return
 
     await channel.send({ embeds: [message] })
   }
 
-  static async render(birthdays: BirthdayDocumentType[]) {
+  static async render(birthdays: BirthdayDocumentType[], channel: TextChannel) {
     const users = await Promise.all(
       birthdays.map(({ userId }) => {
         return fetchUser({ id: userId })
@@ -44,7 +50,15 @@ export class BirthdayHandler {
 
     if (users.length === 0) return
 
-    const mentions = users.map((user) => user.toString()).join(' ')
+    const mentions = users
+      .map((user) => {
+        const member = channel.members.find((m) => m.user.id === user.id)
+
+        if (!member) return user.toString()
+
+        return member.nickname
+      })
+      .join(' ')
 
     return new EmbedBuilder()
       .setThumbnail(
@@ -56,10 +70,14 @@ export class BirthdayHandler {
   }
 
   static scheduler() {
-    return (client.birthdayScheduler ??= schedule('0 0 * * *', BirthdayHandler.checkBirthdays, {
-      scheduled: false,
-      timezone: 'Europe/Lisbon',
-    }))
+    return (client.birthdayScheduler ??= schedule(
+      '0 0 * * *',
+      BirthdayHandler.checkBirthdays,
+      {
+        scheduled: false,
+        timezone: 'Europe/Lisbon',
+      },
+    ))
   }
 
   static start() {
