@@ -1,4 +1,5 @@
 import { config } from '../config'
+import fetch from 'node-fetch'
 
 type OMDBQueryOptions = {
   /**
