@@ -7,7 +7,7 @@ export const roles = {
 }
 
 export const imdb = {
-  idRegex: /ev\d{7}\/\d{4}(-\d)?|(ch|co|ev|nm|tt)\d{7}/,
+  idRegex: /ev\d{7}\/\d{4}(-\d)?|(ch|co|ev|nm|tt)\d{7,8}/,
 }
 
 export const channels = {

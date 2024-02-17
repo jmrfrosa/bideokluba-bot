@@ -24,14 +24,16 @@ import { fetchChannel, fetchMessage, fetchUser } from '../util/common'
 import { now, toDateTime } from '../util/datetime'
 import { logger } from '../util/logger'
 import { Poll } from './Poll'
-import { Movie as MovieData } from 'imdb-api'
 import { entityCache } from '../service/CacheService'
 import { CacheNames } from '../typings/enums'
 import { Dayjs } from 'dayjs'
+import { OMDBMovieResponse } from '@util/imdb'
 
 export class Movie implements MovieInterface {
   static readonly collectionName = 'movies'
-  static readonly model = dbInstance.db.collection<MovieDocumentType>(this.collectionName)
+  static readonly model = dbInstance.db.collection<MovieDocumentType>(
+    this.collectionName,
+  )
   static readonly channelName = 'info'
   static readonly options = [
     { id: 'discuss', label: 'Marcar como discutido', emoji: '✅' },
@@ -85,7 +87,10 @@ export class Movie implements MovieInterface {
     return entityCache.find(dbMovie.message, CacheNames.Movies)
   }
 
-  static async createFromImdb(movieData: MovieData, curator?: User | null) {
+  static async createFromImdb(
+    movieData: OMDBMovieResponse,
+    curator?: User | null,
+  ) {
     const channel = await fetchChannel({ name: Movie.channelName })
 
     if (!channel) {
@@ -102,11 +107,11 @@ export class Movie implements MovieInterface {
     const movie = new Movie({
       message,
       channel,
-      title: movieData.title,
-      url: movieData.imdburl,
-      year: movieData.year,
-      director: movieData.director,
-      poster: movieData.poster,
+      title: movieData.Title,
+      url: `https://www.imdb.com/title/${movieData.imdbID}/`,
+      year: Number.parseInt(movieData.Year),
+      director: movieData.Director,
+      poster: movieData.Poster,
       links: [],
       polls: [],
       ...(curator && { curator }),
@@ -116,7 +121,9 @@ export class Movie implements MovieInterface {
   }
 
   static async fetch(searchParams: Partial<WithId<MovieDocumentType>>) {
-    const query = Object.fromEntries(Object.entries(searchParams).filter(([_, v]) => !!v))
+    const query = Object.fromEntries(
+      Object.entries(searchParams).filter(([_, v]) => !!v),
+    )
 
     if (!Object.keys(query).length) return
 
@@ -125,7 +132,10 @@ export class Movie implements MovieInterface {
     })
 
     if (!movie) {
-      logger.error('Something went wrong. Movie for query %o was not found.', query)
+      logger.error(
+        'Something went wrong. Movie for query %o was not found.',
+        query,
+      )
       return
     }
 
@@ -167,15 +177,23 @@ export class Movie implements MovieInterface {
 
       return {
         channel,
-        message: await fetchMessage({ id: data.message, channel, fromCache: false }),
+        message: await fetchMessage({
+          id: data.message,
+          channel,
+          fromCache: false,
+        }),
         title: data.title,
         url: data.url,
         links: data.links,
         poster: data.poster,
         year: data.year,
         director: data.director,
-        curator: data.curator ? await fetchUser({ id: data.curator }) : undefined,
-        discussionDate: data.discussionDate ? toDateTime(data.discussionDate) : undefined,
+        curator: data.curator
+          ? await fetchUser({ id: data.curator })
+          : undefined,
+        discussionDate: data.discussionDate
+          ? toDateTime(data.discussionDate)
+          : undefined,
         polls: data.polls,
       }
     } catch (error) {
@@ -241,17 +259,28 @@ export class Movie implements MovieInterface {
       ? this.links.map((url, idx) => `‣ [Link ${idx + 1}](${url})`).join('\n')
       : null
     const pollsText = this.polls?.length
-      ? this.polls.map((poll, idx) => `‣ [Ver Votação ${idx + 1}](${poll.message?.url})`).join('\n')
+      ? this.polls
+          .map(
+            (poll, idx) => `‣ [Ver Votação ${idx + 1}](${poll.message?.url})`,
+          )
+          .join('\n')
       : null
 
-    const fields: APIEmbedField[] = [{ name: 'Curador', value: curatorText, inline: true }]
+    const fields: APIEmbedField[] = [
+      { name: 'Curador', value: curatorText, inline: true },
+    ]
 
-    this.year && fields.push({ name: 'Ano', value: String(this.year), inline: true })
-    this.director && fields.push({ name: 'Realizador', value: this.director, inline: true })
+    this.year &&
+      fields.push({ name: 'Ano', value: String(this.year), inline: true })
+    this.director &&
+      fields.push({ name: 'Realizador', value: this.director, inline: true })
     linksText && fields.push({ name: 'Links', value: linksText })
     pollsText && fields.push({ name: 'Votações', value: pollsText })
     this.discussionDate &&
-      fields.push({ name: 'Discutido em', value: time(this.discussionDate.toDate()) })
+      fields.push({
+        name: 'Discutido em',
+        value: time(this.discussionDate.toDate()),
+      })
 
     const embed = new EmbedBuilder()
       .setTitle(this.title)
@@ -270,7 +299,8 @@ export class Movie implements MovieInterface {
 
   async addPoll(poll: Poll) {
     if (!poll.message?.id) return
-    if (!this.polls.find(({ message }) => message?.id === poll.message?.id)) this.polls.push(poll)
+    if (!this.polls.find(({ message }) => message?.id === poll.message?.id))
+      this.polls.push(poll)
 
     await Movie.model.updateOne(
       { message: this.message.id },
@@ -295,9 +325,9 @@ export class Movie implements MovieInterface {
       return
     }
 
-    const userIsModerator = (member?.permissions as Readonly<PermissionsBitField>)?.has(
-      PermissionsBitField.Flags.ManageMessages,
-    )
+    const userIsModerator = (
+      member?.permissions as Readonly<PermissionsBitField>
+    )?.has(PermissionsBitField.Flags.ManageMessages)
     const hasPermissions = userIsModerator
 
     if (!hasPermissions) {
@@ -353,15 +383,22 @@ export class Movie implements MovieInterface {
     const linksStr = interaction.fields.getTextInputValue(`links-${customId}`)
     this.links = linksStr.split(',').map((str) => str.trim())
 
-    await Movie.model.updateOne({ message: this.message.id }, { $set: { links: this.links } })
+    await Movie.model.updateOne(
+      { message: this.message.id },
+      { $set: { links: this.links } },
+    )
     await this.render()
   }
 
   private async handleVoteModalSubmission(interaction: ModalSubmitInteraction) {
     const { customId } = interaction
 
-    const startDateStr = interaction.fields.getTextInputValue(`startDate-${customId}`)
-    const endDateStr = interaction.fields.getTextInputValue(`endDate-${customId}`)
+    const startDateStr = interaction.fields.getTextInputValue(
+      `startDate-${customId}`,
+    )
+    const endDateStr = interaction.fields.getTextInputValue(
+      `endDate-${customId}`,
+    )
 
     await Poll.buildMoviePoll(this, startDateStr, endDateStr)
   }
@@ -402,7 +439,9 @@ export class Movie implements MovieInterface {
 
   private buildEditModal() {
     const modalId = `editModal-${this.message.id}`
-    const modal = new ModalBuilder().setCustomId(modalId).setTitle(`Editar ${this.title}`)
+    const modal = new ModalBuilder()
+      .setCustomId(modalId)
+      .setTitle(`Editar ${this.title}`)
 
     const linksInput = new TextInputBuilder()
       .setCustomId(`links-${modalId}`)
@@ -410,9 +449,10 @@ export class Movie implements MovieInterface {
       .setStyle(TextInputStyle.Paragraph)
       .setValue(this.links.join(', '))
 
-    const editLinksRow = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-      linksInput,
-    )
+    const editLinksRow =
+      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+        linksInput,
+      )
 
     modal.addComponents(editLinksRow)
 
@@ -439,13 +479,15 @@ export class Movie implements MovieInterface {
       .setValue(now().add(10, 'days').format('DD/MM/YYYY'))
       .setRequired(false)
 
-    const startDateRow = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-      startDateInput,
-    )
+    const startDateRow =
+      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+        startDateInput,
+      )
 
-    const endDateRow = new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-      endDateInput,
-    )
+    const endDateRow =
+      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+        endDateInput,
+      )
 
     modal.addComponents(startDateRow, endDateRow)
 

@@ -1,5 +1,5 @@
 import { imdb } from '@util/constants'
-import { imdbClient } from '@util/imdb'
+import { omdbClient } from '@util/imdb'
 import { CommandRunnerType } from '@typings/command.type'
 import { MovieCommandNames } from '../movies.command'
 import { Movie } from '@models/Movie'
@@ -7,8 +7,14 @@ import { Movie } from '@models/Movie'
 export const CreateMovieRunner: CommandRunnerType = async (interaction) => {
   await interaction.deferReply({ ephemeral: true })
 
-  const imdbUrl = interaction.options.getString(MovieCommandNames.IMDB_URL_OPT, true)
-  const curator = interaction.options.getUser(MovieCommandNames.CURATOR_OPT, false)
+  const imdbUrl = interaction.options.getString(
+    MovieCommandNames.IMDB_URL_OPT,
+    true,
+  )
+  const curator = interaction.options.getUser(
+    MovieCommandNames.CURATOR_OPT,
+    false,
+  )
 
   const latestMovie = await Movie.latestMovie()
 
@@ -32,6 +38,15 @@ export const CreateMovieRunner: CommandRunnerType = async (interaction) => {
   }
 
   const movieData = await fetchMovieData(imdbId)
+
+  if (!movieData) {
+    await interaction.reply({
+      content:
+        'Não encontrei o filme pesquisado no IMDB. Verifica a pesquisa em https://www.omdbapi.com/',
+    })
+    return
+  }
+
   const movie = await Movie.createFromImdb(movieData, curator)
 
   const replyContent = movie
@@ -51,5 +66,5 @@ function getIdFromImdbUrl(url: string) {
 }
 
 async function fetchMovieData(imdbId: string) {
-  return await imdbClient.get({ id: imdbId })
+  return await omdbClient.findById(imdbId)
 }
